@@ -1,0 +1,10 @@
+{
+  "modelVersion": "5.1.0",
+  "name": "liquidglassdemo",
+  "version": "1.0.0",
+  "description": "Liquid Glass demo — ArkTS / ArkUI 原生鸿蒙工程",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {}
+}
