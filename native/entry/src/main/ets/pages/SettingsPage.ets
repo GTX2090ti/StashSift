@@ -125,7 +125,7 @@ struct SettingsPage {
         if (this.scanning) {
           LoadingProgress().width(18).height(18)
         } else {
-          SymbolGlyph($r('sys.symbol.chevron_right')).fontSize(16).fontColor([this.theme.textSecondary])
+          SymbolGlyph($r('sys.symbol.chevron_right')).fontSize(10).fontColor([this.theme.textSecondary])
         }
       }
       .width('100%')
@@ -160,7 +160,7 @@ struct SettingsPage {
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
         SymbolGlyph($r('sys.symbol.chevron_right'))
-          .fontSize(16)
+          .fontSize(10)
           .fontColor([this.theme.textSecondary])
       }
       .width('100%')

@@ -316,7 +316,7 @@ struct TagsPage {
                     .margin({ right: 6 })
                 }
                 SymbolGlyph($r('sys.symbol.chevron_right'))
-                  .fontSize(13)
+                  .fontSize(10)
                   .fontColor([this.theme.textSecondary])
               }
               .width('100%')

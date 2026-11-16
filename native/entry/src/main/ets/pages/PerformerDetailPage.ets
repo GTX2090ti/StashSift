@@ -40,7 +40,11 @@ struct PerformerDetailPage {
   @State openBody: boolean = false
   @State openCareer: boolean = false
   @State openLinks: boolean = false
-  @State openScenes: boolean = true
+  /** 入场参数校验：拿不到 id 时置 false，页面不渲染内容（随即退回上一页） */
+  @State paramOk: boolean = true
+  /** 参演短片搜索（服务端 q 过滤，不是本地筛已加载的页） */
+  @State searchMode: boolean = false
+  @State keyword: string = ''
   @State lastUrl: string = ''
   @State theme: GlassTheme = currentGlassTheme()
   @State bd: GlassBackdrop = currentBackdrop()
@@ -90,12 +94,25 @@ struct PerformerDetailPage {
 
   aboutToAppear(): void {
     const params = router.getParams() as Record<string, string>
+    let id: string = ''
     if (params !== undefined && params !== null) {
-      const id: string | undefined = params['id']
-      if (id !== undefined) {
-        this.performerId = id
+      const raw: string | undefined = params['id']
+      if (raw !== undefined && raw !== null) {
+        id = raw.trim()
       }
     }
+    // 没有 id 就是无效进入：不渲染空壳、不发任何 GraphQL 请求，直接退回上一页
+    if (id.length === 0) {
+      this.paramOk = false
+      this.say('缺少演员参数，已返回')
+      try {
+        router.back()
+      } catch (e) {
+        console.error('[PerformerDetail] back failed')
+      }
+      return
+    }
+    this.performerId = id
     this.loadAll()
   }
 
@@ -130,6 +147,86 @@ struct PerformerDetailPage {
     this.loading = false
   }
 
+  /** 关键词变了：回到第一页重拉（服务端过滤，翻页语义才正确） */
+  private async reloadScenesByKeyword(): Promise<void> {
+    this.page = 1
+    this.hasMore = true
+    this.scenes = []
+    await this.loadScenes()
+  }
+
+  /** 参演短片区块标题：搜索态带上关键词 */
+  private sceneSectionTitle(): string {
+    const n: string = this.scenes.length.toString()
+    if (this.searchMode && this.keyword.trim().length > 0) {
+      return '参演短片 (' + n + ') · 搜索「' + this.keyword.trim() + '」'
+    }
+    return '参演短片 (' + n + ')'
+  }
+
+  /**
+   * 参演短片区块标题（自己读状态，不走 sectionHeader 的值传参）。
+   * ArkUI 的 @Builder 参数按值传递时，传方法返回值不会触发重渲染，
+   * 标题里的搜索关键词就会一直是旧值。
+   */
+  /** 参演短片区块标题：不可折叠，无箭头、无点击切换；搜索态带上关键词 */
+  @Builder
+  sceneSectionHeader() {
+    Row() {
+      Text(this.sceneSectionTitle())
+        .fontSize(12).fontWeight(FontWeight.Medium).fontColor(this.theme.textPrimary)
+        .layoutWeight(1)
+    }
+    .width('100%')
+    .padding({ top: 8, bottom: 2, left: 2, right: 2 })
+  }
+
+  /**
+   * 搜索态的内联输入框。
+   * 左右各内缩 2vp，与 sectionHeader 的 padding 一致，图标和标题文字严格同一条竖线；
+   * 底部加 chip 背景，让它看起来是一个输入框，而不是浮在卡片上的文字。
+   */
+  @Builder
+  sceneSearchRow() {
+    Row() {
+      SymbolGlyph($r('sys.symbol.magnifyingglass'))
+        .fontSize(15)
+        .fontColor([this.theme.textSecondary])
+        .margin({ right: 8 })
+      TextInput({ text: this.keyword, placeholder: '搜索短片名' })
+        .layoutWeight(1)
+        .fontSize(13)
+        .height(32)
+        .padding(0)
+        .backgroundColor(Color.Transparent)
+        .placeholderColor(this.theme.textSecondary)
+        .fontColor(this.theme.textPrimary)
+        .onChange((v: string) => {
+          this.keyword = v
+        })
+        .onSubmit(() => {
+          this.reloadScenesByKeyword()
+        })
+      if (this.keyword.length > 0) {
+        SymbolGlyph($r('sys.symbol.xmark'))
+          .fontSize(14)
+          .fontColor([this.theme.textSecondary])
+          .padding({ left: 6 })
+          .onClick(() => {
+            this.keyword = ''
+            this.reloadScenesByKeyword()
+          })
+      }
+    }
+    .width('100%')
+    .height(40)
+    .alignItems(VerticalAlign.Center)
+    .padding({ left: 10, right: 10 })
+    .margin({ left: 2, right: 2, top: 6, bottom: 2 })
+    .backgroundColor(this.theme.chipBg)
+    .borderRadius(RADIUS_CHIP)
+  }
+
   private async loadScenes(): Promise<void> {
     if (this.scenesLoading || !this.hasMore) {
       return
@@ -137,7 +234,8 @@ struct PerformerDetailPage {
     this.scenesLoading = true
     try {
       const api = new StashApi(AppSettings.instance.baseUrl, AppSettings.instance.apiKey)
-      const raw: SceneDto[] = await api.findScenesByPerformer(this.performerId, this.page, this.pageSize)
+      const raw: SceneDto[] = await api.findScenesByPerformer(
+        this.performerId, this.page, this.pageSize, this.keyword.trim())
       const list: Scene[] = Scene.listFromDto(raw)
       const merged: Scene[] = this.scenes.slice()
       for (let i = 0; i < list.length; i++) {
@@ -1048,30 +1146,11 @@ struct PerformerDetailPage {
         .fontSize(12).fontWeight(FontWeight.Medium).fontColor(this.theme.textPrimary)
         .layoutWeight(1)
       SymbolGlyph(open ? $r('sys.symbol.chevron_down') : $r('sys.symbol.chevron_right'))
-        .fontSize(11).fontColor([this.theme.textSecondary])
+        .fontSize(10).fontColor([this.theme.textSecondary])
     }
     .width('100%')
     .padding({ top: 8, bottom: 2, left: 2, right: 2 })
     .onClick(onToggle)
-  }
-
-  /** 基础信息卡：性别 / 生日 / 年龄（或享年）/ 逝世 / 国家 / 种族 */
-  @Builder
-  basicCard() {
-    Column() {
-      this.basicRow('性别', this.genderText(this.performer.gender))
-      this.basicRow('生日', this.performer.birthdate)
-      this.basicRow('年龄', this.ageText())
-      if (this.performer.death_date.length > 0) {
-        this.basicRow('逝世', this.performer.death_date)
-      }
-      this.basicRow('国家', this.performer.country)
-      this.basicRow('种族', this.performer.ethnicity)
-    }
-    .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
-    .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
-    .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24).margin({ top: GAP_M })
   }
 
   /** 身体数据（折叠） */
@@ -1203,6 +1282,24 @@ struct PerformerDetailPage {
     .backdropBlur(24).margin({ top: GAP_M })
   }
 
+  /**
+   * 头像卡里的一行补充信息：生日 / 逝世 / 种族。
+   * 性别、年龄已经在 chip 里，这里不重复；空值不占位，也不留多余分隔符。
+   */
+  private bioLine(): string {
+    const parts: string[] = []
+    if (this.performer.birthdate.length > 0) {
+      parts.push('生日 ' + this.performer.birthdate)
+    }
+    if (this.performer.death_date.length > 0) {
+      parts.push('逝世 ' + this.performer.death_date)
+    }
+    if (this.performer.ethnicity.length > 0) {
+      parts.push('种族 ' + this.performer.ethnicity)
+    }
+    return parts.join(' · ')
+  }
+
   @Builder
   headerCard() {
     Column() {
@@ -1252,6 +1349,17 @@ struct PerformerDetailPage {
             .fontColor(this.theme.textSecondary)
             .width('100%')
             .margin({ top: 2 })
+
+          // 生日 / 逝世 / 种族（原来在独立的「基础信息」卡里，现在并进头像卡）
+          if (this.bioLine().length > 0) {
+            Text(this.bioLine())
+              .fontSize(11)
+              .fontColor(this.theme.textSecondary)
+              .width('100%')
+              .maxLines(2)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+              .margin({ top: 2 })
+          }
 
           Flex({ wrap: FlexWrap.Wrap }) {
             if (this.ageText().length > 0) {
@@ -1418,10 +1526,23 @@ struct PerformerDetailPage {
           ? (this.performer.scene_count.toString() + ' 部作品')
           : '',
         theme: this.theme,
-        style: GlassStyle.REGULAR
+        style: GlassStyle.REGULAR,
+        showSearch: true,
+        searchActive: this.searchMode,
+        onSearchTap: () => {
+          // 一下展开、再一下收起（收起时清空关键词并恢复全量）
+          this.searchMode = !this.searchMode
+          if (!this.searchMode && this.keyword.length > 0) {
+            this.keyword = ''
+            this.reloadScenesByKeyword()
+          }
+        }
       })
 
-      if (this.loading) {
+      if (!this.paramOk) {
+        // 缺参数：什么都不渲染，避免闪出一个空壳详情页（此时已 router.back()）
+        Column() { }.layoutWeight(1).width('100%')
+      } else if (this.loading) {
         Column() {
           LoadingProgress().width(28).height(28)
         }
@@ -1470,7 +1591,6 @@ struct PerformerDetailPage {
               this.mergeCard()
             }
 
-            this.basicCard()
             this.aliasCard()
             this.bodyCard()
             this.careerCard()
@@ -1529,33 +1649,39 @@ struct PerformerDetailPage {
             .width('100%')
             .margin({ top: GAP_M })
 
-            // 参演短片（折叠，内容与标题同卡片）
+            // 参演短片（不折叠，内容与标题同卡片）
             Column() {
-              this.sectionHeader('参演短片 (' + this.scenes.length.toString() + ')', this.openScenes, () => {
-                this.openScenes = !this.openScenes
-              })
+              this.sceneSectionHeader()
 
-              if (this.openScenes) {
-                Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.SpaceBetween }) {
-                  ForEach(this.scenes, (s: Scene) => {
-                    Column() {
-                      this.smallSceneCard(s)
-                    }
-                    .width(this.cardWidthPercent())
-                    .margin({ bottom: GAP_S + 2 })
-                  }, (s: Scene) => s.id)
+              if (this.searchMode) {
+                this.sceneSearchRow()
+              }
+
+              if (this.searchMode && !this.scenesLoading && this.scenes.length === 0) {
+                Text('没有匹配「' + this.keyword.trim() + '」的作品')
+                  .fontSize(12).fontColor(this.theme.textSecondary)
+                  .width('100%').padding({ top: 8, bottom: 4 })
+              }
+              Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.SpaceBetween }) {
+                ForEach(this.scenes, (s: Scene) => {
+                  Column() {
+                    this.smallSceneCard(s)
+                  }
+                  .width(this.cardWidthPercent())
+                  .margin({ bottom: GAP_S + 2 })
+                }, (s: Scene) => s.id)
+              }
+              .width('100%')
+              .margin({ top: 8 })
+
+              if (this.scenesLoading) {
+                Row() {
+                  LoadingProgress().width(20).height(20)
+                  Text('加载中…').fontSize(12).fontColor(this.theme.textSecondary).margin({ left: 6 })
                 }
                 .width('100%')
-
-                if (this.scenesLoading) {
-                  Row() {
-                    LoadingProgress().width(20).height(20)
-                    Text('加载中…').fontSize(12).fontColor(this.theme.textSecondary).margin({ left: 6 })
-                  }
-                  .width('100%')
-                  .justifyContent(FlexAlign.Center)
-                  .padding(10)
-                }
+                .justifyContent(FlexAlign.Center)
+                .padding(10)
               }
             }
             .width('100%')

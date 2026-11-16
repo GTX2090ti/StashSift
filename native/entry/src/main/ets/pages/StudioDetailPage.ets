@@ -25,8 +25,12 @@ struct StudioDetailPage {
   @State openStats: boolean = false
   @State openTree: boolean = false
   @State openLinks: boolean = false
-  @State openTags: boolean = true
-  @State openScenes: boolean = true
+  @State openTags: boolean = false
+  /** 入场参数校验：拿不到 id 时置 false，页面不渲染内容（随即退回上一页） */
+  @State paramOk: boolean = true
+  /** 作品列表搜索（服务端 q 过滤，不是本地筛已加载的页） */
+  @State searchMode: boolean = false
+  @State keyword: string = ''
   // ── 编辑态 ───────────────────────────────────────────
   @State editMode: boolean = false
   @State busy: boolean = false
@@ -55,12 +59,25 @@ struct StudioDetailPage {
 
   aboutToAppear(): void {
     const p = router.getParams() as Record<string, string>
+    let id: string = ''
     if (p !== undefined && p !== null) {
-      const id: string | undefined = p['id']
-      if (id !== undefined) {
-        this.studioId = id
+      const raw: string | undefined = p['id']
+      if (raw !== undefined && raw !== null) {
+        id = raw.trim()
       }
     }
+    // 没有 id 就是无效进入：不渲染空壳、不发任何 GraphQL 请求，直接退回上一页
+    if (id.length === 0) {
+      this.paramOk = false
+      this.say('缺少工作室参数，已返回')
+      try {
+        router.back()
+      } catch (e) {
+        console.error('[StudioDetail] back failed')
+      }
+      return
+    }
+    this.studioId = id
     this.loadAll()
   }
 
@@ -98,6 +115,85 @@ struct StudioDetailPage {
     this.loading = false
   }
 
+  /** 关键词变了：回到第一页重拉（服务端过滤，翻页语义才正确） */
+  private async reloadScenesByKeyword(): Promise<void> {
+    this.page = 1
+    this.hasMore = true
+    this.scenes = []
+    await this.loadScenes()
+  }
+
+  /** 短片区块标题：搜索态带上关键词，让用户明确当前是筛选结果 */
+  private sceneSectionTitle(): string {
+    const n: string = this.scenes.length.toString()
+    if (this.searchMode && this.keyword.trim().length > 0) {
+      return '作品 (' + n + ') · 搜索「' + this.keyword.trim() + '」'
+    }
+    return '作品 (' + n + ')'
+  }
+
+  /**
+   * 短片区块标题（自己读状态，不走 sectionHeader 的值传参）。
+   * ArkUI 的 @Builder 参数按值传递时，传方法返回值不会触发重渲染，
+   * 标题里的搜索关键词就会一直是旧值，所以这里单独写一个读状态的 builder。
+   */
+  /** 作品区块标题：不可折叠，无箭头、无点击切换；搜索态带上关键词 */
+  @Builder
+  sceneSectionHeader() {
+    Row() {
+      Text(this.sceneSectionTitle())
+        .fontSize(12).fontWeight(FontWeight.Medium)
+        .fontColor(this.theme.textPrimary).layoutWeight(1)
+    }
+    .width('100%').padding({ top: 8, bottom: 2, left: 2, right: 2 })
+  }
+
+  /**
+   * 搜索态的内联输入框。
+   * 左右各内缩 2vp，与 sectionHeader 的 padding 一致，图标和标题文字严格同一条竖线；
+   * 底部加 chip 背景，让它看起来是一个输入框，而不是浮在卡片上的文字。
+   */
+  @Builder
+  sceneSearchRow() {
+    Row() {
+      SymbolGlyph($r('sys.symbol.magnifyingglass'))
+        .fontSize(15)
+        .fontColor([this.theme.textSecondary])
+        .margin({ right: 8 })
+      TextInput({ text: this.keyword, placeholder: '搜索作品名' })
+        .layoutWeight(1)
+        .fontSize(13)
+        .height(32)
+        .padding(0)
+        .backgroundColor(Color.Transparent)
+        .placeholderColor(this.theme.textSecondary)
+        .fontColor(this.theme.textPrimary)
+        .onChange((v: string) => {
+          this.keyword = v
+        })
+        .onSubmit(() => {
+          this.reloadScenesByKeyword()
+        })
+      if (this.keyword.length > 0) {
+        SymbolGlyph($r('sys.symbol.xmark'))
+          .fontSize(14)
+          .fontColor([this.theme.textSecondary])
+          .padding({ left: 6 })
+          .onClick(() => {
+            this.keyword = ''
+            this.reloadScenesByKeyword()
+          })
+      }
+    }
+    .width('100%')
+    .height(40)
+    .alignItems(VerticalAlign.Center)
+    .padding({ left: 10, right: 10 })
+    .margin({ left: 2, right: 2, top: 6, bottom: 2 })
+    .backgroundColor(this.theme.chipBg)
+    .borderRadius(RADIUS_CHIP)
+  }
+
   private async loadScenes(): Promise<void> {
     if (this.scenesLoading || !this.hasMore) {
       return
@@ -108,7 +204,7 @@ struct StudioDetailPage {
       const sf: string = '{"studios":{"value":[' + JSON.stringify(this.studioId) +
         '],"modifier":"INCLUDES","depth":0}}'
       const raw: SceneDto[] = await api.findScenesFiltered(
-        this.page, this.pageSize, '', 'date', 'DESC', sf)
+        this.page, this.pageSize, this.keyword.trim(), 'date', 'DESC', sf)
       const list: Scene[] = Scene.listFromDto(raw)
       const merged: Scene[] = this.scenes.slice()
       for (let i = 0; i < list.length; i++) {
@@ -276,12 +372,13 @@ struct StudioDetailPage {
   @Builder
   sectionHeader(title: string, open: boolean, onToggle: () => void) {
     Row() {
-      Text(title).fontSize(14).fontWeight(FontWeight.Bold)
-        .fontColor(this.theme.textPrimary).layoutWeight(1)
+      Text(title)
+        .fontSize(12).fontWeight(FontWeight.Medium).fontColor(this.theme.textPrimary)
+        .layoutWeight(1)
       SymbolGlyph(open ? $r('sys.symbol.chevron_down') : $r('sys.symbol.chevron_right'))
-        .fontSize(13).fontColor([this.theme.textSecondary])
+        .fontSize(10).fontColor([this.theme.textSecondary])
     }
-    .width('100%').padding({ top: 12, bottom: 4 })
+    .width('100%').padding({ top: 8, bottom: 2, left: 2, right: 2 })
     .onClick(onToggle)
   }
 
@@ -592,25 +689,7 @@ struct StudioDetailPage {
     .border({ width: 1, color: this.theme.cardBorder }).backdropBlur(24)
   }
 
-  @Builder
-  basicCard() {
-    Column() {
-      this.basicRow('别名', this.aliasText())
-      this.basicRow('已整理', this.studio.organized ? '是' : '否')
-      this.basicRow('评分', this.studio.rating100 > 0
-        ? (this.studio.rating100 / 20).toFixed(1) + ' / 5.0' : '')
-      if (this.studio.details.length > 0) {
-        Text(this.studio.details)
-          .fontSize(12).fontColor(this.theme.textSecondary)
-          .width('100%').margin({ top: 10 }).lineHeight(18)
-      }
-    }
-    .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
-    .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
-    .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24).margin({ top: GAP_M })
-  }
-
+  /** 作品卡：归属信息（别名 / 已整理 / 评分）+ 作品数 + 简介，全部在一张折叠卡里 */
   @Builder
   statsCard() {
     Column() {
@@ -618,18 +697,27 @@ struct StudioDetailPage {
         this.openStats = !this.openStats
       })
       if (this.openStats) {
+        this.basicRow('别名', this.aliasText())
+        this.basicRow('已整理', this.studio.organized ? '是' : '否')
+        this.basicRow('评分', this.studio.rating100 > 0
+          ? (this.studio.rating100 / 20).toFixed(1) + ' / 5.0' : '')
         this.basicRow('短片', this.studio.scene_count.toString() + ' 部')
         this.basicRow('图片', this.studio.image_count.toString() + ' 张')
         this.basicRow('画廊', this.studio.gallery_count.toString() + ' 个')
         this.basicRow('演员', this.studio.performer_count.toString() + ' 位')
         this.basicRow('集合', this.studio.group_count.toString() + ' 个')
         this.basicRow('射精', this.studio.o_counter.toString() + ' 次')
+        if (this.studio.details.length > 0) {
+          Text(this.studio.details)
+            .fontSize(12).fontColor(this.theme.textSecondary)
+            .width('100%').margin({ top: 10 }).lineHeight(18)
+        }
       }
     }
-    .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
+    .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 6, bottom: 10 }).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24).margin({ top: GAP_M })
+    .backdropBlur(24).margin({ top: GAP_S })
   }
 
   @Builder
@@ -643,10 +731,10 @@ struct StudioDetailPage {
         this.basicRow('子工作室', this.studio.childNames.join(' / '))
       }
     }
-    .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
+    .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 6, bottom: 10 }).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24).margin({ top: GAP_M })
+    .backdropBlur(24).margin({ top: GAP_S })
   }
 
   @Builder
@@ -667,10 +755,10 @@ struct StudioDetailPage {
         }, (u: string) => u)
       }
     }
-    .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
+    .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 6, bottom: 10 }).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24).margin({ top: GAP_M })
+    .backdropBlur(24).margin({ top: GAP_S })
   }
 
   @Builder
@@ -691,10 +779,10 @@ struct StudioDetailPage {
         }.width('100%')
       }
     }
-    .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
+    .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 6, bottom: 10 }).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24).margin({ top: GAP_M })
+    .backdropBlur(24).margin({ top: GAP_S })
   }
 
   @Builder
@@ -719,10 +807,23 @@ struct StudioDetailPage {
       GlassNavBar({
         title: this.studio.name.length === 0 ? L10n.translate('工作室') : this.studio.name,
         subtitle: this.studio.scene_count > 0 ? (this.studio.scene_count.toString() + ' 部作品') : '',
-        theme: this.theme, style: GlassStyle.REGULAR
+        theme: this.theme, style: GlassStyle.REGULAR,
+        showSearch: true,
+        searchActive: this.searchMode,
+        onSearchTap: () => {
+          // 一下展开、再一下收起（收起时清空关键词并恢复全量）
+          this.searchMode = !this.searchMode
+          if (!this.searchMode && this.keyword.length > 0) {
+            this.keyword = ''
+            this.reloadScenesByKeyword()
+          }
+        }
       })
 
-      if (this.loading) {
+      if (!this.paramOk) {
+        // 缺参数：什么都不渲染，避免闪出一个空壳详情页（此时已 router.back()）
+        Column() { }.layoutWeight(1).width('100%')
+      } else if (this.loading) {
         Column() { LoadingProgress().width(28).height(28) }
           .layoutWeight(1).width('100%').justifyContent(FlexAlign.Center)
       } else if (this.errorText.length > 0) {
@@ -755,38 +856,45 @@ struct StudioDetailPage {
               this.editCard()
             }
 
-            this.basicCard()
             this.statsCard()
             this.treeCard()
             this.linksCard()
             this.tagsCard()
 
             Column() {
-              this.sectionHeader('短片 (' + this.scenes.length.toString() + ')', this.openScenes, () => {
-                this.openScenes = !this.openScenes
-              })
-            }
-            .width('100%').padding(PAD_PAGE)
-            .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
-            .border({ width: 1, color: this.theme.cardBorder })
-            .backdropBlur(24).margin({ top: GAP_M })
-
-            if (this.openScenes) {
+              this.sceneSectionHeader()
+              if (this.searchMode) {
+                this.sceneSearchRow()
+              }
+              // 网格与加载行放在同一张卡里（和演员详情页一致），
+              // 否则卡片背景只包住标题行，网格会直接压在页面背景上。
+              // 作品区块不折叠：内容始终渲染。
+              if (this.searchMode && !this.scenesLoading && this.scenes.length === 0) {
+                Text('没有匹配「' + this.keyword.trim() + '」的作品')
+                  .fontSize(12).fontColor(this.theme.textSecondary)
+                  .width('100%').padding({ top: 8, bottom: 4 })
+              }
               Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.SpaceBetween }) {
                 ForEach(this.scenes, (s: Scene) => {
                   Column() { this.smallSceneCard(s) }
                     .width(layoutFor(this.winW).columns === 2 ? '48.5%' : '32%')
                     .margin({ bottom: GAP_S })
                 }, (s: Scene) => s.id)
-              }.width('100%')
-            }
+              }
+              .width('100%')
+              .margin({ top: 8 })
 
-            if (this.scenesLoading) {
-              Row() {
-                LoadingProgress().width(20).height(20)
-                Text('加载中…').fontSize(12).fontColor(this.theme.textSecondary).margin({ left: 6 })
-              }.width('100%').justifyContent(FlexAlign.Center).padding(12)
+              if (this.scenesLoading) {
+                Row() {
+                  LoadingProgress().width(20).height(20)
+                  Text('加载中…').fontSize(12).fontColor(this.theme.textSecondary).margin({ left: 6 })
+                }.width('100%').justifyContent(FlexAlign.Center).padding(12)
+              }
             }
+            .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 6, bottom: 10 })
+            .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
+            .border({ width: 1, color: this.theme.cardBorder })
+            .backdropBlur(24).margin({ top: GAP_S })
           }
           .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 4, bottom: 32 })
           .alignItems(HorizontalAlign.Start)

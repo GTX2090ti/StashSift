@@ -648,7 +648,7 @@ export class StashApi {
     return data !== undefined && data !== null
   }
   async findScenesByPerformer(
-    performerId: string, page: number, perPage: number
+    performerId: string, page: number, perPage: number, q: string = ''
   ): Promise<SceneDto[]> {
     let gq: string =
       'query FindScenes($filter: FindFilterType!, $sf: SceneFilterType) {' +
@@ -656,8 +656,12 @@ export class StashApi {
     gq = gq + ' id title date rating100 o_counter play_count organized paths { screenshot webp }'
     gq = gq + ' studio { id name } performers { id name } tags { id name }'
     gq = gq + ' files { height duration } captions { caption_type } } } }'
-    const filter: string = '{"page":' + page.toString() + ',"per_page":' + perPage.toString() +
-      ',"sort":"date","direction":"DESC"}'
+    let filter: string = '{"page":' + page.toString() + ',"per_page":' + perPage.toString() +
+      ',"sort":"date","direction":"DESC"'
+    if (q.length > 0) {
+      filter = filter + ',"q":' + JSON.stringify(q)
+    }
+    filter = filter + '}'
     const sf: string = '{"performers":{"value":[' + JSON.stringify(performerId) +
       '],"modifier":"INCLUDES"}}'
     const vars: string = '{"filter":' + filter + ',"sf":' + sf + '}'

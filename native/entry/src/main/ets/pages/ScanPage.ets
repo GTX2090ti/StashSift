@@ -242,7 +242,7 @@ struct ScanPage {
         LoadingProgress().width(18).height(18)
       } else {
         SymbolGlyph($r('sys.symbol.chevron_right'))
-          .fontSize(16)
+          .fontSize(10)
           .fontColor([this.theme.textSecondary])
       }
     }
@@ -558,7 +558,7 @@ struct ScanPage {
                     .fontColor(this.theme.textPrimary)
                     .layoutWeight(1)
                   SymbolGlyph($r('sys.symbol.chevron_right'))
-                    .fontSize(14)
+                    .fontSize(10)
                     .fontColor([this.theme.textSecondary])
                 }
                 .width('100%')

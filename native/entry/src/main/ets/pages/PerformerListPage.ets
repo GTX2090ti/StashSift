@@ -39,6 +39,8 @@ struct PerformerListPage {
 
   private page: number = 1
   private pageSize: number = 48
+  /** 跳详情节流标记（防连点重复压栈） */
+  private pushing: boolean = false
   private sorts: PerformerSort[] = [
     { label: '名字', field: 'name' },
     { label: '参演数', field: 'scenes_count' },
@@ -54,6 +56,8 @@ struct PerformerListPage {
   private lastVersion: number = scenesVersion()
 
   onPageShow(): void {
+    // 从详情页返回：解锁跳转节流
+    this.pushing = false
     this.theme = currentGlassTheme()
     this.bd = currentBackdrop()
     const v: number = scenesVersion()
@@ -82,6 +86,22 @@ struct PerformerListPage {
     this.items = []
     this.errorText = ''
     await this.load()
+  }
+
+  /** 点卡片进详情：节流，避免连点把同一个详情页压两层 */
+  private openDetail(id: string): void {
+    if (this.pushing || id.length === 0) {
+      return
+    }
+    this.pushing = true
+    router.pushUrl({ url: 'pages/PerformerDetailPage', params: { 'id': id } })
+      .catch(() => {
+        this.pushing = false
+      })
+    // 兜底解锁：正常返回时 onPageShow 也会解锁
+    setTimeout(() => {
+      this.pushing = false
+    }, 800)
   }
 
   private async load(): Promise<void> {
@@ -189,7 +209,7 @@ struct PerformerListPage {
     .backdropBlur(18)
     .clip(true)
     .onClick(() => {
-      router.pushUrl({ url: 'pages/PerformerDetailPage', params: { 'id': p.id } })
+      this.openDetail(p.id)
     })
   }
 

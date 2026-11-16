@@ -55,7 +55,7 @@ struct ScrapeHubPage {
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
       SymbolGlyph($r('sys.symbol.chevron_right'))
-        .fontSize(16)
+        .fontSize(10)
         .fontColor([this.theme.textSecondary])
     }
     .width('100%')

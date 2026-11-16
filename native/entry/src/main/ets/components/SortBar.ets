@@ -47,9 +47,8 @@ export struct SortBar {
           .fontSize(12)
           .fontColor(this.theme.textPrimary)
         SymbolGlyph($r('sys.symbol.chevron_down'))
-          .fontSize(11)
+          .fontSize(10)
           .fontColor([this.theme.textSecondary])
-          .margin({ left: 3 })
       }
       .padding({ left: GAP_M, right: GAP_S, top: 7, bottom: 7 })
       .backgroundColor(this.theme.chipBg)

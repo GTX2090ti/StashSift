@@ -28,6 +28,8 @@ struct StudioListPage {
   @State showNew: boolean = false
   @State newName: string = ''
   @State busy: boolean = false
+  /** 跳详情节流标记（防连点重复压栈） */
+  private pushing: boolean = false
   @State theme: GlassTheme = currentGlassTheme()
   @State bd: GlassBackdrop = currentBackdrop()
 
@@ -57,6 +59,22 @@ struct StudioListPage {
       console.error('[StudioListPage] ' + (e as Error).message)
     }
     this.loading = false
+  }
+
+  /** 点卡片进详情：节流，避免连点把同一个详情页压两层 */
+  private openDetail(id: string): void {
+    if (this.pushing || id.length === 0) {
+      return
+    }
+    this.pushing = true
+    router.pushUrl({ url: 'pages/StudioDetailPage', params: { 'id': id } })
+      .catch(() => {
+        this.pushing = false
+      })
+    // 兜底解锁：正常返回时 onPageShow 也会解锁
+    setTimeout(() => {
+      this.pushing = false
+    }, 800)
   }
 
   private reloadWithSort(): void {
@@ -121,6 +139,8 @@ struct StudioListPage {
   }
   /** 返回本页时刷新主题（设置页切换外观后立即生效） */
   onPageShow(): void {
+    // 从详情页返回：解锁跳转节流
+    this.pushing = false
     this.theme = currentGlassTheme()
     this.bd = currentBackdrop()
   }
@@ -254,7 +274,7 @@ struct StudioListPage {
             }
           }
           .onClick(() => {
-            router.pushUrl({ url: 'pages/StudioDetailPage', params: { 'id': item.id } })
+            this.openDetail(item.id)
           })
         }, (item: Studio) => item.id)
 

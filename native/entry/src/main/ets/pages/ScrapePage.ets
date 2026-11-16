@@ -681,7 +681,7 @@ struct ScrapePage {
                         router.pushUrl({ url: 'pages/ScraperStorePage' })
                       })
                     SymbolGlyph(this.showScrapers ? $r('sys.symbol.chevron_down') : $r('sys.symbol.chevron_right'))
-                      .fontSize(12)
+                      .fontSize(10)
                       .fontColor([this.theme.textSecondary])
                   }
                   .width('100%')

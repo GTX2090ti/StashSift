@@ -901,9 +901,8 @@ private sortMenu(): MenuElement[] {
                 .fontSize(12)
                 .fontColor(this.theme.textPrimary)
               SymbolGlyph($r('sys.symbol.chevron_down'))
-                .fontSize(11)
+                .fontSize(10)
                 .fontColor([this.theme.textSecondary])
-                .margin({ left: 3 })
             }
             .flexShrink(0)
             .margin({ right: 6 })
