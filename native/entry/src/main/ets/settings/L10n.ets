@@ -1,5 +1,5 @@
 /**
- * StashGo — L10n（ArkTS 原生）
+ * StashSift — L10n（ArkTS 原生）
  */
 export enum AppLanguage {
   SYSTEM = 'system',

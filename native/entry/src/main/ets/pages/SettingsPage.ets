@@ -1,5 +1,5 @@
 /**
- * StashGo — 设置页（ArkTS 原生）
+ * StashSift — 设置页（ArkTS 原生）
  */
 import { router, window, promptAction } from '@kit.ArkUI'
 import { common } from '@kit.AbilityKit'

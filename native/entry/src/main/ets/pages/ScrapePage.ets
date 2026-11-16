@@ -1,5 +1,5 @@
 /**
- * StashGo — 剪刮页（名称 / URL 两种模式 + 写回）
+ * StashSift — 剪刮页（名称 / URL 两种模式 + 写回）
  */
 import { router } from '@kit.ArkUI'
 import { hilog } from '@kit.PerformanceAnalysisKit'
@@ -401,7 +401,7 @@ struct ScrapePage {
       }
     } catch (e) {
       const raw: string = (e as Error).message
-      hilog.warn(0x0000, 'StashGo-Scrape', 'scrape failed: %{public}s', raw)
+      hilog.warn(0x0000, 'StashSift-Scrape', 'scrape failed: %{public}s', raw)
       this.statusError = true
       this.status = this.humanError(raw)
       this.suggestUrl = this.isNameUnsupported(raw)
@@ -476,7 +476,7 @@ struct ScrapePage {
         }
       }
     } catch (e) {
-      hilog.warn(0x0000, 'StashGo-Scrape', 'read scene failed: %{public}s', (e as Error).message)
+      hilog.warn(0x0000, 'StashSift-Scrape', 'read scene failed: %{public}s', (e as Error).message)
     }
 
     // 2) 基础字段：标题允许用刮削结果覆盖（与现有完全相同＝重复，不写）；其余只补空
@@ -516,7 +516,7 @@ struct ScrapePage {
       }
     } catch (e) {
       const msg: string = (e as Error).message
-      hilog.error(0x0000, 'StashGo-Scrape', 'base fields failed: %{public}s', msg)
+      hilog.error(0x0000, 'StashSift-Scrape', 'base fields failed: %{public}s', msg)
       this.statusError = true
       this.status = '基础字段写回失败：' + msg
       this.busy = false
@@ -564,7 +564,7 @@ struct ScrapePage {
       }
     } catch (e) {
       const msg: string = (e as Error).message
-      hilog.error(0x0000, 'StashGo-Scrape', 'resolve ids failed: %{public}s', msg)
+      hilog.error(0x0000, 'StashSift-Scrape', 'resolve ids failed: %{public}s', msg)
       this.statusError = true
       this.status = '名字转 ID 失败：' + msg
       this.busy = false
@@ -600,7 +600,7 @@ struct ScrapePage {
       this.status = head + '　' + added + keepText + studioText
     } catch (e) {
       const msg: string = (e as Error).message
-      hilog.error(0x0000, 'StashGo-Scrape', 'meta failed: %{public}s', msg)
+      hilog.error(0x0000, 'StashSift-Scrape', 'meta failed: %{public}s', msg)
       this.statusError = true
       this.status = '关联字段写回失败：' + msg
     }

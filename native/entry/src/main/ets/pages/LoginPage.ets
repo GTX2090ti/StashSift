@@ -1,5 +1,5 @@
 /**
- * StashGo — 登录页（ArkTS 原生）
+ * StashSift — 登录页（ArkTS 原生）
  */
 import { router } from '@kit.ArkUI'
 import { StashApi } from '../api/StashApi'

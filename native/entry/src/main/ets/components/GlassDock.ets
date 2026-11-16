@@ -1,5 +1,5 @@
 /**
- * StashGo — 悬浮胶囊底部导航（公共组件）
+ * StashSift — 悬浮胶囊底部导航（公共组件）
  *
  * isRoot = true  用于主页：点击其它标签走 pushUrl（主页始终在栈底）
  * isRoot = false 用于其它标签页：点主页走 back()，点其它标签走 replaceUrl（避免栈无限增长）

@@ -1,5 +1,5 @@
 /**
- * StashGo — 生物识别（人脸 / 指纹）解锁
+ * StashSift — 生物识别（人脸 / 指纹）解锁
  *
  * 用 userIAM 的 UserAuthInstance：ATL3（生物识别）+ 人脸/指纹任一通过即解锁。
  */

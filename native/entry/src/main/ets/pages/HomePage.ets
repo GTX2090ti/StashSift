@@ -1,5 +1,5 @@
 /**
- * StashGo — 主页（内容流：最新添加 + 继续观看，菜单入口已移入设置）
+ * StashSift — 主页（内容流：最新添加 + 继续观看，菜单入口已移入设置）
  */
 import { router, window, display } from '@kit.ArkUI'
 import { StashApi } from '../api/StashApi'

@@ -1,5 +1,5 @@
 /**
- * StashGo — 筛选用的可选标签块（chip）
+ * StashSift — 筛选用的可选标签块（chip）
  *
  * 为什么单独做成 @Component 而不是页面里的 @Builder：
  * ArkUI 的 @Builder 按值传参不会订阅状态变化，参数里的 active 会永远停在首屏渲染的值，

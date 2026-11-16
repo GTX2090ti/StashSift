@@ -1,5 +1,5 @@
 /**
- * StashGo — 短片筛选状态（对齐 Stash SceneFilterType）
+ * StashSift — 短片筛选状态（对齐 Stash SceneFilterType）
  *
  * 直接产出 findScenes 的 scene_filter JSON 字符串。
  */

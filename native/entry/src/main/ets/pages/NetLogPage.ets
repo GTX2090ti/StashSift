@@ -1,5 +1,5 @@
 /**
- * StashGo — 网络日志
+ * StashSift — 网络日志
  */
 import { NetLog, NetLogEntry } from '../api/StashApi'
 import { GlassCard } from '../components/GlassCard'

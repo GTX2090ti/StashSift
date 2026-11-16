@@ -1,5 +1,5 @@
 /**
- * StashGo — 演员详情（资料 + 收藏/评分 + 参演短片）
+ * StashSift — 演员详情（资料 + 收藏/评分 + 参演短片）
  */
 import { router, promptAction } from '@kit.ArkUI'
 import { StashApi } from '../api/StashApi'

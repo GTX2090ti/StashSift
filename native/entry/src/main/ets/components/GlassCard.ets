@@ -1,5 +1,5 @@
 /**
- * StashGo — 玻璃卡片（半透明 + 背景模糊，尺寸走令牌）
+ * StashSift — 玻璃卡片（半透明 + 背景模糊，尺寸走令牌）
  */
 import { GlassStyle, GlassTheme, GLASS_THEME_LIGHT } from '../common/GlassUtils'
 import { PAD_PAGE, RADIUS_CARD, GAP_XS, GAP_S, NAV_SUB, GAP_L } from '../common/Responsive'

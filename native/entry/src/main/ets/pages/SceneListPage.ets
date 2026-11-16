@@ -1,5 +1,5 @@
 /**
- * StashGo — 短片列表（对齐原版 UI：工具行 + 搜索行 + 双列封面网格）
+ * StashSift — 短片列表（对齐原版 UI：工具行 + 搜索行 + 双列封面网格）
  */
 import { router } from '@kit.ArkUI'
 import { StashApi } from '../api/StashApi'

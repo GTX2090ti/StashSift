@@ -1,5 +1,5 @@
 /**
- * StashGo — AppSettings（ArkTS 原生）
+ * StashSift — AppSettings（ArkTS 原生）
  */
 import { preferences } from '@kit.ArkData'
 import { common, ConfigurationConstant } from '@kit.AbilityKit'

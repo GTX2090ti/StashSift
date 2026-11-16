@@ -1,5 +1,5 @@
 /**
- * StashGo — 鉴权图片组件（对齐原版 AuthImage）
+ * StashSift — 鉴权图片组件（对齐原版 AuthImage）
  *
  * Stash 的封面接口需要 ApiKey 请求头，ArkUI 的 Image 组件不能带自定义头，
  * 所以这里用 http 取字节流 → 解码成 PixelMap → 内存缓存。

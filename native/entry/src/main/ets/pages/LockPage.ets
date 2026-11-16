@@ -1,5 +1,5 @@
 /**
- * StashGo — 锁屏（生物识别解锁后才能进入资料库）
+ * StashSift — 锁屏（生物识别解锁后才能进入资料库）
  */
 import { router } from '@kit.ArkUI'
 import { authenticateBiometric, BiometricResult, biometricAvailable } from '../common/Biometric'

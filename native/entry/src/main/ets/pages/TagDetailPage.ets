@@ -1,5 +1,5 @@
 /**
- * StashGo — 标签详情
+ * StashSift — 标签详情
  *
  * v1.0.7：只读区补齐 名称 / 简介 / 别名 / 父标签 / 短片数；
  * 新增「编辑」面板（name / sort_name / description / aliases / favorite / 父标签多选）

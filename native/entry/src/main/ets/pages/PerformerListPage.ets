@@ -1,5 +1,5 @@
 /**
- * StashGo — 演员列表（头像网格 + 搜索 + 排序 + 无限滚动）
+ * StashSift — 演员列表（头像网格 + 搜索 + 排序 + 无限滚动）
  */
 import { router } from '@kit.ArkUI'
 import { StashApi } from '../api/StashApi'

@@ -1,5 +1,5 @@
 /**
- * StashGo — 标签列表（ArkTS 原生）
+ * StashSift — 标签列表（ArkTS 原生）
  *
  * v1.0.7：顶栏下方加「新建标签」入口（createTag），成功后刷新列表并提示。
  */

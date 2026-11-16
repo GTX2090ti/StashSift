@@ -1,5 +1,5 @@
 /**
- * StashGo — 工作室列表（ArkTS 原生）
+ * StashSift — 工作室列表（ArkTS 原生）
  */
 import { router, promptAction } from '@kit.ArkUI'
 import { StashApi } from '../api/StashApi'

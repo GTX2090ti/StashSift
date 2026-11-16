@@ -1,5 +1,5 @@
 /**
- * StashGo — Stash GraphQL 客户端（ArkTS 原生）
+ * StashSift — Stash GraphQL 客户端（ArkTS 原生）
  */
 import { http } from '@kit.NetworkKit'
 import { BusinessError } from '@kit.BasicServicesKit'

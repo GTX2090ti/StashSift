@@ -1,5 +1,5 @@
 /**
- * StashGo — 工作室详情（分组折叠结构，与演员详情一致）
+ * StashSift — 工作室详情（分组折叠结构，与演员详情一致）
  */
 import { router, promptAction } from '@kit.ArkUI'
 import { StashApi } from '../api/StashApi'

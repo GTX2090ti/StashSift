@@ -1,5 +1,5 @@
 /**
- * StashGo — 任务队列
+ * StashSift — 任务队列
  *
  * 展示 Stash 的 jobQueue：状态、描述、子任务进度，3 秒自动刷新。
  */
@@ -80,7 +80,7 @@ struct StashTasksPage {
       })
       return out
     } catch (e) {
-      hilog.warn(0x0000, 'StashGo-Tasks', 'sort failed, keep原始顺序')
+      hilog.warn(0x0000, 'StashSift-Tasks', 'sort failed, keep原始顺序')
       return list
     }
   }
@@ -96,7 +96,7 @@ struct StashTasksPage {
     } catch (e) {
       const msg: string = (e as Error).message
       this.errorText = '加载失败：' + msg
-      hilog.error(0x0000, 'StashGo-Tasks', 'load failed: %{public}s', msg)
+      hilog.error(0x0000, 'StashSift-Tasks', 'load failed: %{public}s', msg)
     }
     this.loading = false
   }

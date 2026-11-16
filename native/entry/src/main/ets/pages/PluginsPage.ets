@@ -1,5 +1,5 @@
 /**
- * StashGo — 插件（列表 / 启停 / 任务运行）
+ * StashSift — 插件（列表 / 启停 / 任务运行）
  */
 import { StashApi } from '../api/StashApi'
 import { AppSettings } from '../settings/AppSettings'

@@ -1,5 +1,5 @@
 /**
- * StashGo — 列表页排序选项（与短片列表同一套交互：芯片 + bindMenu）
+ * StashSift — 列表页排序选项（与短片列表同一套交互：芯片 + bindMenu）
  */
 import { GlassTheme } from './GlassUtils'
 

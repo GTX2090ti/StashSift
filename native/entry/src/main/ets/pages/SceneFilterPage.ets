@@ -1,5 +1,5 @@
 /**
- * StashGo — 短片筛选面板
+ * StashSift — 短片筛选面板
  */
 import { router } from '@kit.ArkUI'
 import { StashApi } from '../api/StashApi'

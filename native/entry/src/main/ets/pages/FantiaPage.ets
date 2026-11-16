@@ -1,5 +1,5 @@
 /**
- * StashGo — Fantia 专用刮削页
+ * StashSift — Fantia 专用刮削页
  *
  * Fantia 的刮削器只声明了 URL 能力（fantia.jp/posts/<id>、fantia.jp/products/<id>），
  * 按名称刮会被 Stash 直接拒绝（cannot load SCENE by name），所以这里只收一个数字 ID，
@@ -165,7 +165,7 @@ struct FantiaPage {
       }
     } catch (e) {
       const raw: string = (e as Error).message
-      hilog.warn(0x0000, 'StashGo-Fantia', 'scrape failed: %{public}s', raw)
+      hilog.warn(0x0000, 'StashSift-Fantia', 'scrape failed: %{public}s', raw)
       this.statusError = true
       this.status = this.humanError(raw)
     }
@@ -269,7 +269,7 @@ struct FantiaPage {
         }
       }
     } catch (e) {
-      hilog.warn(0x0000, 'StashGo-Fantia', 'read scene failed: %{public}s', (e as Error).message)
+      hilog.warn(0x0000, 'StashSift-Fantia', 'read scene failed: %{public}s', (e as Error).message)
     }
 
     // 2) 基础字段：标题可覆盖（相同＝重复不写），其它只补空

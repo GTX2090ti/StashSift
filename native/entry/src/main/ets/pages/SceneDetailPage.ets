@@ -1,5 +1,5 @@
 /**
- * StashGo — 短片详情（参考 stashscrubber 的信息分区结构）
+ * StashSift — 短片详情（参考 stashscrubber 的信息分区结构）
  *
  * 结构：横幅 → 标题 → 操作行 → 基本情報 → 工作室 → 演员 → 标签 → URL → 文件
  */

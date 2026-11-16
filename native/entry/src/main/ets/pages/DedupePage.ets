@@ -1,5 +1,5 @@
 /**
- * StashGo — 去重 / 合并（基于 phash 距离）
+ * StashSift — 去重 / 合并（基于 phash 距离）
  */
 import { router } from '@kit.ArkUI'
 import { StashApi } from '../api/StashApi'

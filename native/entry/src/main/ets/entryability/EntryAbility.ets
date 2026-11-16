@@ -1,5 +1,5 @@
 /**
- * StashGo — EntryAbility（沉浸式状态栏 + 明暗主题）
+ * StashSift — EntryAbility（沉浸式状态栏 + 明暗主题）
  */
 import { UIAbility, Want, AbilityConstant, ConfigurationConstant, Configuration } from '@kit.AbilityKit'
 import { window } from '@kit.ArkUI'
@@ -10,7 +10,7 @@ import { currentGlassTheme } from '../common/GlassUtils'
 import { installErrorLogger } from '../common/ErrorLog'
 import { NetSwitch } from '../common/NetSwitch'
 
-const TAG: string = 'StashGo'
+const TAG: string = 'StashSift'
 
 export default class EntryAbility extends UIAbility {
   private stage: window.WindowStage | null = null

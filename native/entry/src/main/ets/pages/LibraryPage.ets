@@ -1,5 +1,5 @@
 /**
- * StashGo — 资料库（ArkTS 原生）
+ * StashSift — 资料库（ArkTS 原生）
  */
 import { router } from '@kit.ArkUI'
 import { GlassCard } from '../components/GlassCard'

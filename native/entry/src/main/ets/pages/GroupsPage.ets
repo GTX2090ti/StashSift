@@ -1,5 +1,5 @@
 /**
- * StashGo — 集合列表（ArkTS 原生）
+ * StashSift — 集合列表（ArkTS 原生）
  *
  * v1.0.7：改用 findGroupsRich 展示封面 / 短片数 / 日期 / 工作室，并支持新建集合。
  */

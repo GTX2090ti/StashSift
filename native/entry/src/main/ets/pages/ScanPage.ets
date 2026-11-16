@@ -1,5 +1,5 @@
 /**
- * StashGo — 扫描（二级页面）
+ * StashSift — 扫描（二级页面）
  *
  * 从「设置 → 扫描」进入：
  *  - 扫描媒体库（增量）
@@ -156,7 +156,7 @@ struct ScanPage {
     this.folderBusyOn()
     try {
       const api = new StashApi(AppSettings.instance.baseUrl, AppSettings.instance.apiKey)
-      hilog.info(0x0000, 'StashGo-Scan', 'selective scan dirs=%{public}d', paths.length)
+      hilog.info(0x0000, 'StashSift-Scan', 'selective scan dirs=%{public}d', paths.length)
       const ok: boolean = await api.scanLibrary(false, paths)
       this.lastAction = ok ? ('选择性扫描 ' + paths.length.toString() + ' 个目录 已提交') : '提交失败'
       promptAction.showToast({ message: ok ? '已提交' : '提交失败', duration: 2200 })

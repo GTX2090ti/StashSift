@@ -1,5 +1,5 @@
 /**
- * StashGo — 统计页
+ * StashSift — 统计页
  */
 import { StashApi } from '../api/StashApi'
 import { AppSettings } from '../settings/AppSettings'

@@ -1,5 +1,5 @@
 /**
- * StashGo — 刮削器安装（Stash 刮削器包管理）
+ * StashSift — 刮削器安装（Stash 刮削器包管理）
  *
  * 数据来源：
  *   已安装 —— installedPackages(type: Scraper)
@@ -90,7 +90,7 @@ struct ScraperStorePage {
         ' 个，可用 ' + this.available.length.toString() + ' 个'
     } catch (e) {
       const msg: string = (e as Error).message
-      hilog.warn(0x0000, 'StashGo-Store', 'load failed: %{public}s', msg)
+      hilog.warn(0x0000, 'StashSift-Store', 'load failed: %{public}s', msg)
       this.statusError = true
       this.status = this.humanError(msg)
     }

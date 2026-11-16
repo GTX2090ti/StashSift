@@ -1,5 +1,5 @@
 /**
- * StashGo — 数据模型（ArkTS 原生，显式 DTO）
+ * StashSift — 数据模型（ArkTS 原生，显式 DTO）
  */
 
 export interface TagDto {
