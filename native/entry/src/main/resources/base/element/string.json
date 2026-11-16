@@ -1,0 +1,23 @@
+{
+  "string": [
+    { "name": "app_name", "value": "StashSift" },
+    { "name": "module_desc", "value": "StashSift 主模块" },
+    { "name": "EntryAbility_desc", "value": "StashSift 主入口" },
+    { "name": "EntryAbility_label", "value": "StashSift" },
+    { "name": "nav_glass", "value": "玻璃导航栏" },
+    { "name": "nav_gallery", "value": "玻璃画廊" },
+    { "name": "nav_settings", "value": "设置" },
+    { "name": "section_title", "value": "液态玻璃组件展示" },
+    { "name": "glass_card_title", "value": "玻璃卡片" },
+    { "name": "glass_card_desc", "value": "API 26 沉浸式材质 · 内容模糊透出 · 交互形变" },
+    { "name": "glass_section", "value": "材质厚度" },
+    { "name": "style_thin", "value": "超薄" },
+    { "name": "style_regular", "value": "常规" },
+    { "name": "style_thick", "value": "厚重" },
+    { "name": "interactive_label", "value": "交互形变" },
+    { "name": "toggle_theme", "value": "切换主题" },
+    { "name": "theme_light", "value": "浅色" },
+    { "name": "theme_dark", "value": "深色" },
+    { "name": "fallback_note", "value": "本设备不支持沉浸式材质，已降级为背景模糊回退方案" }
+  ]
+}

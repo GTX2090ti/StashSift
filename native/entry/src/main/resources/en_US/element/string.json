@@ -1,0 +1,20 @@
+{
+  "string": [
+    { "name": "app_name", "value": "StashSift" },
+    { "name": "nav_glass", "value": "Glass NavBar" },
+    { "name": "nav_gallery", "value": "Glass Gallery" },
+    { "name": "nav_settings", "value": "Settings" },
+    { "name": "section_title", "value": "Liquid Glass Components" },
+    { "name": "glass_card_title", "value": "Glass Card" },
+    { "name": "glass_card_desc", "value": "API 26 Immersive Material · Blur-through · Interaction" },
+    { "name": "glass_section", "value": "Material thickness" },
+    { "name": "style_thin", "value": "Ultra Thin" },
+    { "name": "style_regular", "value": "Regular" },
+    { "name": "style_thick", "value": "Thick" },
+    { "name": "interactive_label", "value": "Interactive" },
+    { "name": "toggle_theme", "value": "Toggle Theme" },
+    { "name": "theme_light", "value": "Light" },
+    { "name": "theme_dark", "value": "Dark" },
+    { "name": "fallback_note", "value": "Device does not support ImmersiveMaterial, fallback to backgroundBlurStyle used" }
+  ]
+}

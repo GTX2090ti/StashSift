@@ -1,0 +1,31 @@
+{
+  "src": [
+    "pages/LoginPage",
+    "pages/LockPage",
+    "pages/HomePage",
+    "pages/SceneListPage",
+    "pages/SceneDetailPage",
+    "pages/SceneFilterPage",
+    "pages/PerformerListPage",
+    "pages/PerformerDetailPage",
+    "pages/StudioListPage",
+    "pages/TagsPage",
+    "pages/GroupsPage",
+    "pages/FavoritesPage",
+    "pages/LibraryPage",
+    "pages/SettingsPage",
+    "pages/TagDetailPage",
+    "pages/GroupDetailPage",
+    "pages/DedupePage",
+    "pages/PluginsPage",
+    "pages/StudioDetailPage",
+    "pages/StatsPage",
+    "pages/ScanPage",
+    "pages/StashTasksPage",
+    "pages/NetLogPage",
+    "pages/ScrapePage",
+    "pages/ScrapeHubPage",
+    "pages/FantiaPage",
+    "pages/ScraperStorePage"
+  ]
+}

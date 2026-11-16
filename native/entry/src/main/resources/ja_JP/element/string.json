@@ -1,0 +1,20 @@
+{
+  "string": [
+    { "name": "app_name", "value": "StashSift" },
+    { "name": "nav_glass", "value": "グラスナビゲーションバー" },
+    { "name": "nav_gallery", "value": "グラスギャラリー" },
+    { "name": "nav_settings", "value": "設定" },
+    { "name": "section_title", "value": "液体ガラスコンポーネント" },
+    { "name": "glass_card_title", "value": "グラスカード" },
+    { "name": "glass_card_desc", "value": "API 26 没浸式素材 · ブラー透過 · 交互" },
+    { "name": "glass_section", "value": "素材厚さ" },
+    { "name": "style_thin", "value": "極薄" },
+    { "name": "style_regular", "value": "通常" },
+    { "name": "style_thick", "value": "厚手" },
+    { "name": "interactive_label", "value": "インタラクティブ" },
+    { "name": "toggle_theme", "value": "テーマ切り替え" },
+    { "name": "theme_light", "value": "ライト" },
+    { "name": "theme_dark", "value": "ダーク" },
+    { "name": "fallback_note", "value": "このデバイスは没浸式素材をサポートしていません。背景ぼかしフォールバックを使用します" }
+  ]
+}

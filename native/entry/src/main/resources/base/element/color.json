@@ -1,0 +1,44 @@
+{
+  "color": [
+    {
+      "name": "app_name_color",
+      "value": "#FF3D7EFF",
+      "description": "品牌色（亮色/深色通用）"
+    },
+    {
+      "name": "start_window_background",
+      "value": "#FF0E0F13",
+      "description": "启动窗口背景（深色）"
+    },
+    {
+      "name": "glass_card_bg",
+      "value": "#40FFFFFF",
+      "description": "玻璃卡片半透明白（API26 materialColor 也会复用）"
+    },
+    {
+      "name": "glass_card_bg_dark",
+      "value": "#3D15181F",
+      "description": "玻璃卡片深色半透明"
+    },
+    {
+      "name": "scaffold_bg_light",
+      "value": "#FFF2F2F7",
+      "description": "浅色主页背景"
+    },
+    {
+      "name": "scaffold_bg_dark",
+      "value": "#FF0E0F13",
+      "description": "深色主页背景"
+    },
+    {
+      "name": "glass_border_light",
+      "value": "#33FFFFFF",
+      "description": "玻璃卡片浅色描边"
+    },
+    {
+      "name": "glass_border_dark",
+      "value": "#26FFFFFF",
+      "description": "玻璃卡片深色描边"
+    }
+  ]
+}

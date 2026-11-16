@@ -1,0 +1,29 @@
+{
+  "module": {
+    "name": "entry",
+    "type": "entry",
+    "mainAbility": "com.example.liquidglassdemo.EntryAbility",
+    "srcPath": "./src/main",
+    "resources": "./src/main/resources",
+    "abilities": [
+      {
+        "name": "EntryAbility",
+        "icon": "$media:icon",
+        "label": "$string:app_name",
+        "skills": [
+          {
+            "entities": [
+              "entity.system.home"
+            ],
+            "actions": ["action.system.home"]
+          }
+        ],
+        "type": "page",
+        "startWindowIcon": "$media:icon",
+        "startWindowBackground": "$color:start_window_background",
+        "formEnabled": false
+      }
+    ],
+    "requestPermissions": []
+  }
+}

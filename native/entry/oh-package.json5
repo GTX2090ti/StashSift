@@ -1,0 +1,13 @@
+{
+  "modelVersion": "5.1.0",
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "Liquid Glass demo — ArkTS / ArkUI 原生鸿蒙工程",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {},
+  "devDependencies": {
+    "@ohos/hypium": "1.0.6"
+  }
+}
