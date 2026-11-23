@@ -381,14 +381,13 @@ struct FantiaPage {
   @Builder
   kindChip(k: number, label: string) {
     Text(label)
-      .fontSize(12)
+      .fontSize(14)
       .fontColor(this.kind === k ? Color.White : this.theme.textSecondary)
       .textAlign(TextAlign.Center)
       .backgroundColor(this.kind === k ? this.theme.brandColor : this.theme.chipBg)
       .borderRadius(8)
       .padding({ top: 9, bottom: 9 })
       .layoutWeight(1)
-      .margin({ left: 3, right: 3 })
       .onClick(() => {
         this.kind = k
         this.status = ''
@@ -407,7 +406,7 @@ struct FantiaPage {
       Refresh({ refreshing: $$this.refreshing, promptText: '下拉刷新刮削结果' }) {
         Scroll() {
         Column() {
-          Row() {
+          Row({ space: 6 }) {
             this.kindChip(0, '投稿 posts')
             this.kindChip(1, '商品 products')
           }

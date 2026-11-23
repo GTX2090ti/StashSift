@@ -621,6 +621,8 @@ export interface ScraperDto {
   id?: string
   name?: string
   scene?: ScraperSpecDto
+  /** 演员刮削能力（listScrapers(types:[PERFORMER])） */
+  performer?: ScraperSpecDto
 }
 
 /** 刮削结果（短片） */
@@ -647,6 +649,39 @@ export interface ScrapedSceneDto {
   studio?: ScrapedStudioRef
   performers?: ScrapedPerformerRef[]
   tags?: ScrapedTagRef[]
+}
+
+/**
+ * 刮削结果（演员）
+ *
+ * 字段按服务端 0.31.1 的 ScrapedPerformer 类型实测返回结构：
+ * 只有一个 name（没有 names 候选名数组），别名是一串 aliases 字符串。
+ * height / weight 是字符串，落到 PerformerUpdate 时要转成数字。
+ */
+export interface ScrapedPerformerDto {
+  name?: string
+  disambiguation?: string
+  gender?: string
+  birthdate?: string
+  death_date?: string
+  country?: string
+  ethnicity?: string
+  eye_color?: string
+  hair_color?: string
+  height?: string
+  weight?: string
+  measurements?: string
+  fake_tits?: string
+  tattoos?: string
+  piercings?: string
+  career_start?: string
+  career_end?: string
+  details?: string
+  aliases?: string
+  tags?: ScrapedTagRef[]
+  images?: string[]
+  urls?: string[]
+  remote_site_id?: string
 }
 
 /** 插件 */
@@ -715,6 +750,10 @@ export class PerformerUpdate {
   career_start: string = ''
   career_end: string = ''
   details: string = ''
+  /** 封面（写回时非空才发送） */
+  image: string = ''
+  /** 标签 id 列表（写回时非空才发送） */
+  tag_ids: string[] = []
 
   static from(p: Performer): PerformerUpdate {
     const u = new PerformerUpdate()

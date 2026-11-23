@@ -24,6 +24,7 @@
     "pages/StashTasksPage",
     "pages/NetLogPage",
     "pages/ScrapePage",
+    "pages/PerformerScrapePage",
     "pages/ScrapeHubPage",
     "pages/FantiaPage",
     "pages/ScraperStorePage"

@@ -49,6 +49,11 @@ struct PerformerDetailPage {
   @State theme: GlassTheme = currentGlassTheme()
   @State bd: GlassBackdrop = currentBackdrop()
   @StorageProp('winWidthVp') winW: number = 360
+  @StorageProp('sceneVersion') @Watch('onScenesChanged') sceneVersion: number = 0
+
+  onScenesChanged(): void {
+    this.loadAll()
+  }
 
   // ── 编辑面板状态 ──
   @State editMode: boolean = false
@@ -87,6 +92,12 @@ struct PerformerDetailPage {
   @State mergeDestName: string = ''
   @State mergeSrcIds: string[] = []
   @State mergeSrcNames: string[] = []
+
+  // ── 刮削菜单状态 ──
+  /** 刮削方式下拉菜单展开状态 */
+  @State scrapeMenuOpen: boolean = false
+  /** 选中的刮削方式（-1 无；0 按名称，1 按 URL），等菜单关闭后再跳页 */
+  @State pendingScrape: number = -1
 
   private performerId: string = ''
   private page: number = 1
@@ -616,13 +627,97 @@ struct PerformerDetailPage {
   @Builder
   actionBtn(label: string, color: ResourceColor, onTap: () => void) {
     Text(label)
-      .fontSize(12)
+      .fontSize(14)
       .fontColor(color)
       .textAlign(TextAlign.Center)
       .backgroundColor(this.theme.chipBg)
       .borderRadius(RADIUS_CHIP)
       .padding({ left: 16, right: 16, top: 8, bottom: 8 })
       .onClick(onTap)
+  }
+
+  /* ---------------- 刮削 ---------------- */
+
+  /**
+   * 刮削方式下拉菜单（锚在「刮削」按钮下方）。
+   * 用 bindPopup 自绘，和短片详情页刚定版的实现一致：
+   * 选项是普通 Text + onClick，动作延后到弹层关闭（onStateChange）后再执行。
+   */
+  @Builder
+  scrapeMenuItem(label: string, idx: number) {
+    Text(label)
+      .fontSize(14)
+      .fontColor(this.theme.textPrimary)
+      .textAlign(TextAlign.Start)
+      .width('100%')
+      .padding({ left: 14, right: 14, top: 11, bottom: 11 })
+      .onClick(() => {
+        this.pendingScrape = idx
+        this.scrapeMenuOpen = false
+      })
+  }
+
+  @Builder
+  scrapeMenuPanel() {
+    Column() {
+      this.scrapeMenuItem('按名称刮削', 0)
+      Divider().color(this.theme.divider).margin({ left: 12, right: 12 })
+      this.scrapeMenuItem('按 URL 刮削', 1)
+      Divider().color(this.theme.divider).margin({ left: 12, right: 12 })
+      this.scrapeMenuItem('BOX', 2)
+    }
+    .width(196)
+    .padding({ top: 6, bottom: 6 })
+    .backgroundColor(this.theme.cardBg)
+    .borderRadius(RADIUS_CARD)
+    .border({ width: 1, color: this.theme.cardBorder })
+    .shadow({ radius: 16, color: this.theme.cardShadow, offsetY: 4 })
+  }
+
+  /** 刮削按钮 */
+  @Builder
+  scrapeBtn() {
+    Text('刮削')
+      .fontSize(12)
+      .fontColor(this.theme.brandColor)
+      .textAlign(TextAlign.Center)
+      .backgroundColor(this.theme.chipBg)
+      .borderRadius(RADIUS_CHIP)
+      .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+      .onClick(() => {
+        this.scrapeMenuOpen = !this.scrapeMenuOpen
+      })
+      .bindPopup(this.scrapeMenuOpen, {
+        builder: this.scrapeMenuPanel,
+        placement: Placement.Bottom,
+        showInSubWindow: false,
+        mask: false,
+        autoCancel: true,
+        enableArrow: true,
+        popupColor: Color.Transparent,
+        onStateChange: (e) => {
+          if (!e.isVisible) {
+            this.scrapeMenuOpen = false
+            const idx: number = this.pendingScrape
+            if (idx >= 0) {
+              this.pendingScrape = -1
+              this.openScrape(idx)
+            }
+          }
+        }
+      })
+  }
+
+  /** 打开演员刮削页（0 按名称 / 1 按 URL / 2 Stash-box 识别） */
+  private openScrape(idx: number): void {
+    router.pushUrl({
+      url: 'pages/PerformerScrapePage',
+      params: {
+        'performerId': this.performerId,
+        'performerName': this.performer.name,
+        'mode': idx.toString()
+      }
+    })
   }
 
   @Builder
@@ -879,7 +974,7 @@ struct PerformerDetailPage {
 
       Row() {
         Text('取消')
-          .fontSize(12).fontColor(this.theme.textPrimary)
+          .fontSize(14).fontColor(this.theme.textPrimary)
           .textAlign(TextAlign.Center).layoutWeight(1)
           .backgroundColor(this.theme.chipBg).borderRadius(RADIUS_CHIP)
           .padding({ top: 9, bottom: 9 })
@@ -888,7 +983,7 @@ struct PerformerDetailPage {
             this.editMode = false
           })
         Text(this.busy ? '保存中…' : '保存')
-          .fontSize(12).fontColor(Color.White)
+          .fontSize(14).fontColor(Color.White)
           .textAlign(TextAlign.Center).layoutWeight(1)
           .backgroundColor(this.theme.brandColor).borderRadius(RADIUS_CHIP)
           .padding({ top: 9, bottom: 9 })
@@ -1052,7 +1147,7 @@ struct PerformerDetailPage {
 
         Row() {
           Text('上一步')
-            .fontSize(12).fontColor(this.theme.textPrimary)
+            .fontSize(14).fontColor(this.theme.textPrimary)
             .textAlign(TextAlign.Center).layoutWeight(1)
             .backgroundColor(this.theme.chipBg).borderRadius(RADIUS_CHIP)
             .padding({ top: 9, bottom: 9 })
@@ -1061,7 +1156,7 @@ struct PerformerDetailPage {
               this.mergeStep = 1
             })
           Text('下一步')
-            .fontSize(12).fontColor(Color.White)
+            .fontSize(14).fontColor(Color.White)
             .textAlign(TextAlign.Center).layoutWeight(1)
             .backgroundColor(this.theme.brandColor).borderRadius(RADIUS_CHIP)
             .padding({ top: 9, bottom: 9 })
@@ -1096,7 +1191,7 @@ struct PerformerDetailPage {
 
         Row() {
           Text('返回修改')
-            .fontSize(12).fontColor(this.theme.textPrimary)
+            .fontSize(14).fontColor(this.theme.textPrimary)
             .textAlign(TextAlign.Center).layoutWeight(1)
             .backgroundColor(this.theme.chipBg).borderRadius(RADIUS_CHIP)
             .padding({ top: 9, bottom: 9 })
@@ -1105,7 +1200,7 @@ struct PerformerDetailPage {
               this.mergeStep = 2
             })
           Text(this.busy ? '合并中…' : '确认合并')
-            .fontSize(12).fontColor(Color.White)
+            .fontSize(14).fontColor(Color.White)
             .textAlign(TextAlign.Center).layoutWeight(1)
             .backgroundColor('#FFE84026').borderRadius(RADIUS_CHIP)
             .padding({ top: 9, bottom: 9 })
@@ -1561,8 +1656,9 @@ struct PerformerDetailPage {
           Column() {
             this.headerCard()
 
-            // 操作行（编辑资料 / 合并）
+            // 操作行（刮削 / 编辑资料 / 合并）
             Row() {
+              this.scrapeBtn()
               this.actionBtn(this.editMode ? '编辑中' : '编辑资料', this.theme.brandColor, () => {
                 if (this.editMode) {
                   this.editMode = false

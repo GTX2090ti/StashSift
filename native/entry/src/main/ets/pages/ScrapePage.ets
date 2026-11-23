@@ -645,7 +645,7 @@ struct ScrapePage {
       Scroll() {
         Column() {
           // 模式切换：文件名优先
-          Row() {
+          Row({ space: 6 }) {
             this.modeChip(0, '短片标题')
             this.modeChip(1, '名称')
             this.modeChip(2, 'URL')
@@ -1076,14 +1076,13 @@ struct ScrapePage {
   @Builder
   modeChip(m: number, label: string) {
     Text(label)
-      .fontSize(12)
+      .fontSize(14)
       .fontColor(this.mode === m ? Color.White : this.theme.textSecondary)
       .textAlign(TextAlign.Center)
       .backgroundColor(this.mode === m ? this.theme.brandColor : this.theme.chipBg)
       .borderRadius(8)
       .padding({ top: 9, bottom: 9 })
       .layoutWeight(1)
-      .margin({ left: 3, right: 3 })
       .onClick(() => {
         this.setMode(m)
       })

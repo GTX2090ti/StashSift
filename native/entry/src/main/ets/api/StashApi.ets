@@ -5,7 +5,7 @@ import { http } from '@kit.NetworkKit'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { AppSettings } from '../settings/AppSettings'
 import { NetSwitch } from '../common/NetSwitch'
-import { PackageDto, SceneGroupRow, PerformerDto, StudioDto, TagDto, GroupDto, PluginTaskDto, SceneDto, JobDto, StatsDto, ScraperDto, ScrapedSceneDto, PluginDto, FolderOption, PerformerUpdate, TagUpdate, StudioUpdate, GroupUpdate, StashBoxSource } from '../models/Models'
+import { PackageDto, SceneGroupRow, PerformerDto, StudioDto, TagDto, GroupDto, PluginTaskDto, SceneDto, JobDto, StatsDto, ScraperDto, ScrapedSceneDto, ScrapedPerformerDto, PluginDto, FolderOption, PerformerUpdate, TagUpdate, StudioUpdate, GroupUpdate, StashBoxSource } from '../models/Models'
 
 export class ApiException extends Error {
   constructor(message: string) {
@@ -202,6 +202,22 @@ interface ScrapeSceneNameData {
 
 interface ScrapeSceneNameEnvelope {
   data?: ScrapeSceneNameData
+}
+
+interface ScrapeSinglePerformerData {
+  scrapeSinglePerformer?: ScrapedPerformerDto[]
+}
+
+interface ScrapeSinglePerformerEnvelope {
+  data?: ScrapeSinglePerformerData
+}
+
+interface ScrapePerformerUrlData {
+  scrapePerformerURL?: ScrapedPerformerDto
+}
+
+interface ScrapePerformerUrlEnvelope {
+  data?: ScrapePerformerUrlData
 }
 
 interface PluginsData {
@@ -1581,6 +1597,13 @@ export class StashApi {
     i = i + ',"career_start":' + JSON.stringify(u.career_start)
     i = i + ',"career_end":' + JSON.stringify(u.career_end)
     i = i + ',"details":' + JSON.stringify(u.details)
+    // 封面 / 标签：只在明确给了内容时才发，避免把原有资料清空
+    if (u.image.length > 0) {
+      i = i + ',"image":' + JSON.stringify(u.image)
+    }
+    if (u.tag_ids.length > 0) {
+      i = i + ',"tag_ids":' + JSON.stringify(u.tag_ids)
+    }
     i = i + '}'
     return this.mutationOk(await this.query(m, '{"i":' + i + '}', 20000), 'performerUpdate')
   }
@@ -1957,6 +1980,104 @@ export class StashApi {
     return one
   }
 
+  /**
+   * 演员刮削器列表（listScrapers(types: [PERFORMER])）。
+   * 实测服务端 0.31.1 支持 PERFORMER 类型，每个刮削器带 performer.supported_scrapes。
+   */
+  async performerScrapers(): Promise<ScraperDto[]> {
+    const gq: string =
+      'query { listScrapers(types: [PERFORMER]) { id name performer { supported_scrapes urls } } }'
+    const text: string = await this.query(gq, '{}', 15000)
+    const env = JSON.parse(text) as ScrapersEnvelope
+    const data: ScrapersData | undefined = env.data
+    if (data === undefined || data === null || data.listScrapers === undefined || data.listScrapers === null) {
+      return []
+    }
+    return data.listScrapers
+  }
+
+  /**
+   * 按名称刮削演员（scrapeSinglePerformer）。
+   * 输入类型是 ScrapeSinglePerformerInput，字段 query（关键词）/ performer_id / performer_input。
+   * 返回 ScrapedPerformer[]，取第一条。
+   */
+  async scrapePerformerByName(name: string, scraperId: string): Promise<ScrapedPerformerDto | null> {
+    const gq: string =
+      'query ScrapeSingle($source: ScraperSourceInput!, $input: ScrapeSinglePerformerInput!) {' +
+      ' scrapeSinglePerformer(source: $source, input: $input) {' +
+      ' name disambiguation gender birthdate death_date country ethnicity eye_color hair_color' +
+      ' height weight measurements fake_tits tattoos piercings career_start career_end details' +
+      ' aliases tags { name } images urls remote_site_id } }'
+    const source: string = '{"scraper_id":' + JSON.stringify(scraperId) + '}'
+    const input: string = '{"query":' + JSON.stringify(name) + '}'
+    const vars: string = '{"source":' + source + ',"input":' + input + '}'
+    const text: string = await this.query(gq, vars, 60000)
+    this.throwIfErrors(text)
+    const env = JSON.parse(text) as ScrapeSinglePerformerEnvelope
+    const data: ScrapeSinglePerformerData | null | undefined = env.data
+    if (data === undefined || data === null) {
+      return null
+    }
+    const arr: ScrapedPerformerDto[] | undefined = data.scrapeSinglePerformer
+    if (arr === undefined || arr === null || arr.length === 0) {
+      return null
+    }
+    return arr[0]
+  }
+
+  /**
+   * 用 stash-box 源识别演员（按名字查）。
+   *
+   * 0.31.1 没有 queryStashBoxPerformer，但 ScraperSourceInput 支持 stash_box_endpoint，
+   * 所以把 stash-box 当成「演员刮削器」用 scrapeSinglePerformer 就能拿到
+   * StashDB / PMV Stash / ThePornDB 的演员资料（实测三者都通）。
+   */
+  async scrapePerformerByStashBox(name: string, endpoint: string): Promise<ScrapedPerformerDto | null> {
+    const gq: string =
+      'query ScrapeSingle($source: ScraperSourceInput!, $input: ScrapeSinglePerformerInput!) {' +
+      ' scrapeSinglePerformer(source: $source, input: $input) {' +
+      ' name disambiguation gender birthdate death_date country ethnicity eye_color hair_color' +
+      ' height weight measurements fake_tits tattoos piercings career_start career_end details' +
+      ' aliases tags { name } images urls remote_site_id } }'
+    const source: string = '{"stash_box_endpoint":' + JSON.stringify(endpoint) + '}'
+    const input: string = '{"query":' + JSON.stringify(name) + '}'
+    const vars: string = '{"source":' + source + ',"input":' + input + '}'
+    const text: string = await this.query(gq, vars, 60000)
+    this.throwIfErrors(text)
+    const env = JSON.parse(text) as ScrapeSinglePerformerEnvelope
+    const data: ScrapeSinglePerformerData | null | undefined = env.data
+    if (data === undefined || data === null) {
+      return null
+    }
+    const arr: ScrapedPerformerDto[] | undefined = data.scrapeSinglePerformer
+    if (arr === undefined || arr === null || arr.length === 0) {
+      return null
+    }
+    return arr[0]
+  }
+
+  /** 按 URL 刮削演员（scrapePerformerURL，服务端按链接自动选站） */
+  async scrapePerformerURL(url: string): Promise<ScrapedPerformerDto | null> {
+    const gq: string =
+      'query ScrapeUrl($url: String!) { scrapePerformerURL(url: $url) {' +
+      ' name disambiguation gender birthdate death_date country ethnicity eye_color hair_color' +
+      ' height weight measurements fake_tits tattoos piercings career_start career_end details' +
+      ' aliases tags { name } images urls remote_site_id } }'
+    const vars: string = '{"url":' + JSON.stringify(url) + '}'
+    const text: string = await this.query(gq, vars, 60000)
+    this.throwIfErrors(text)
+    const env = JSON.parse(text) as ScrapePerformerUrlEnvelope
+    const data: ScrapePerformerUrlData | null | undefined = env.data
+    if (data === undefined || data === null) {
+      return null
+    }
+    const one: ScrapedPerformerDto | undefined = data.scrapePerformerURL
+    if (one === undefined || one === null) {
+      return null
+    }
+    return one
+  }
+
   /** 响应里若有 GraphQL errors，抛 ApiException（带第一条服务端原因） */
   private throwIfErrors(text: string): void {
     const env = JSON.parse(text) as Record<string, Object>
@@ -2158,14 +2279,21 @@ export class StashApi {
 
   /**
    * 用 stash-box 识别一条短片，返回任务 id（失败返回空串）。
-   * 写回策略对齐本地刮削规则：只补空缺，已有内容不覆盖；缺的工作室/演员/标签按需新建。
+   *
+   * 写回策略：
+   * - 文本字段（标题/简介/日期/URL）只补空缺，已有内容不覆盖；
+   * - 工作室/演员/标签默认「不新建」：stash-box 的演员名多为英文，
+   *   和库里已有的日文名对不上，若允许新建会造出重复演员。
+   *   createMissing 为 true 时才按需新建。
    */
-  async identifyScene(sceneId: string, endpoint: string): Promise<string> {
+  async identifyScene(sceneId: string, endpoint: string,
+    createMissing: boolean = false): Promise<string> {
+    const cm: string = createMissing ? 'true' : 'false'
     const fo: string = '[{"field":"title","strategy":"MERGE"},{"field":"details","strategy":"MERGE"},' +
       '{"field":"date","strategy":"MERGE"},{"field":"url","strategy":"MERGE"},' +
-      '{"field":"studio","strategy":"MERGE","createMissing":true},' +
-      '{"field":"performers","strategy":"MERGE","createMissing":true},' +
-      '{"field":"tags","strategy":"MERGE","createMissing":true}]'
+      '{"field":"studio","strategy":"MERGE","createMissing":' + cm + '},' +
+      '{"field":"performers","strategy":"MERGE","createMissing":' + cm + '},' +
+      '{"field":"tags","strategy":"MERGE","createMissing":' + cm + '}]'
     const gq: string = 'mutation Id($input: IdentifyMetadataInput!) { metadataIdentify(input: $input) }'
     const vars: string = '{"input":{"sources":[{"source":{"stash_box_endpoint":' +
       JSON.stringify(endpoint) + '}}],"options":{"setCoverImage":false,"setOrganized":false,' +

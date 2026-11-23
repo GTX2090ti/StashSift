@@ -387,7 +387,7 @@ struct StudioDetailPage {
   @Builder
   actionBtn(label: string, color: ResourceColor, onTap: () => void) {
     Text(label)
-      .fontSize(12)
+      .fontSize(14)
       .fontColor(color)
       .textAlign(TextAlign.Center)
       .backgroundColor(this.theme.chipBg)
@@ -624,7 +624,7 @@ struct StudioDetailPage {
 
       Row() {
         Text('取消')
-          .fontSize(12).fontColor(this.theme.textPrimary)
+          .fontSize(14).fontColor(this.theme.textPrimary)
           .textAlign(TextAlign.Center).layoutWeight(1)
           .backgroundColor(this.theme.chipBg).borderRadius(RADIUS_CHIP)
           .padding({ top: 9, bottom: 9 })
@@ -634,7 +634,7 @@ struct StudioDetailPage {
             this.pickOpen = false
           })
         Text(this.busy ? '保存中…' : '保存')
-          .fontSize(12).fontColor(Color.White)
+          .fontSize(14).fontColor(Color.White)
           .textAlign(TextAlign.Center).layoutWeight(1)
           .backgroundColor(this.theme.brandColor).borderRadius(RADIUS_CHIP)
           .padding({ top: 9, bottom: 9 })

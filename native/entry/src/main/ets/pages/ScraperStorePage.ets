@@ -254,14 +254,13 @@ struct ScraperStorePage {
   @Builder
   tabChip(t: number, label: string) {
     Text(label)
-      .fontSize(12)
+      .fontSize(14)
       .fontColor(this.tab === t ? Color.White : this.theme.textSecondary)
       .textAlign(TextAlign.Center)
       .backgroundColor(this.tab === t ? this.theme.brandColor : this.theme.chipBg)
       .borderRadius(8)
       .padding({ top: 9, bottom: 9 })
       .layoutWeight(1)
-      .margin({ left: 3, right: 3 })
       .onClick(() => {
         this.tab = t
         this.query = ''
@@ -339,7 +338,7 @@ struct ScraperStorePage {
       })
 
       Column() {
-        Row() {
+        Row({ space: 6 }) {
           this.tabChip(0, '可安装')
           this.tabChip(1, '已安装')
         }

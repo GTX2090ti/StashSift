@@ -2,8 +2,8 @@
   "app": {
     "bundleName": "com.gtx2090ti.stashgo.app",
     "vendor": "STASHGO",
-    "versionCode": 832,
-    "versionName": "1.0.32",
+    "versionCode": 835,
+    "versionName": "1.0.35",
     "icon": "$media:app_icon",
     "label": "$string:app_name"
   }

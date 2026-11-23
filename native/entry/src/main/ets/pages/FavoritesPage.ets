@@ -612,7 +612,7 @@ struct FavoritesPage {
   @Builder
   tabChip(idx: number, label: string) {
     Text(label)
-      .fontSize(12)
+      .fontSize(14)
       .fontColor(this.tab === idx ? Color.White : this.theme.textSecondary)
       .backgroundColor(this.tab === idx ? this.theme.brandColor : this.theme.chipBg)
       .borderRadius(RADIUS_CHIP)

@@ -59,7 +59,13 @@ struct SceneDetailPage {
   @State identifyMode: boolean = false
   @State identifyBusy: boolean = false
   @State stashBoxes: StashBoxSource[] = []
+  /** 识别时是否允许新建工作室/演员/标签（默认关，避免造出重复演员） */
+  @State identifyCreateMissing: boolean = false
   @State isFav: boolean = false
+  /** 刮削方式下拉菜单：展开状态 */
+  @State scrapeMenuOpen: boolean = false
+  /** 选中的刮削方式（-1 = 无；0 名称/URL，1 Fantia，2 Stash-box），等菜单关闭后再执行 */
+  @State pendingScrape: number = -1
   /** FAVORITE 标签 id（收藏 = 带这个标签） */
   private favTagId: string = ''
   @State mergeList: Scene[] = []
@@ -633,12 +639,12 @@ struct SceneDetailPage {
       try {
         this.stashBoxes = await this.api().stashBoxSources()
       } catch (e) {
-        this.say('读取 stash-box 配置失败：' + (e as Error).message)
+        this.say('读取 BOX 配置失败：' + (e as Error).message)
         return
       }
     }
     if (this.stashBoxes.length === 0) {
-      this.say('服务端没有配置 stash-box')
+      this.say('服务端没有配置 BOX 源')
       return
     }
     this.identifyMode = true
@@ -661,7 +667,7 @@ struct SceneDetailPage {
     this.identifyBusy = true
     this.say('正在用 ' + box.name + ' 识别…')
     try {
-      const jobId: string = await this.api().identifyScene(this.sceneId, box.endpoint)
+      const jobId: string = await this.api().identifyScene(this.sceneId, box.endpoint, this.identifyCreateMissing)
       if (jobId.length === 0) {
         this.say('识别任务没有提交成功')
         this.identifyBusy = false
@@ -678,16 +684,26 @@ struct SceneDetailPage {
       if (status === 'FINISHED') {
         await this.load()
         bumpScenes()
-        this.say(box.name + ' 识别完成')
+        this.sayDialog(box.name + ' 识别完成', '已用 ' + box.name + ' 完成识别，详情页数据已刷新。\n标题、简介、日期、URL 只补空缺，已有内容不覆盖。')
       } else if (status === 'RUNNING' || status === 'READY' || status.length === 0) {
-        this.say('识别还在跑，稍后下拉刷新看结果')
+        this.sayDialog(box.name + ' 识别还在跑', '任务仍在执行，稍后下拉刷新查看结果。\n识别中不会阻塞其他操作。')
       } else {
-        this.say('识别失败：' + status)
+        this.sayDialog(box.name + ' 识别失败', '服务端返回：' + status + '\n请稍后重试，或换一个识别源。')
       }
     } catch (e) {
-      this.say('识别失败：' + (e as Error).message)
+      this.sayDialog(box.name + ' 识别失败', (e as Error).message)
     }
     this.identifyBusy = false
+  }
+
+  /** 弹窗提示（识别等关键结果用弹窗，避免 toast 一闪而过） */
+  private sayDialog(title: string, message: string): void {
+    AlertDialog.show({
+      title: title,
+      message: message,
+      alignment: DialogAlignment.Center,
+      primaryButton: { value: '知道了', action: () => { } }
+    })
   }
 
   /** 清除刮削：清空标题/详情/日期/番号/导演/URL/工作室/演员/标签 */
@@ -890,53 +906,112 @@ struct SceneDetailPage {
   @Builder
   actionBtn(label: string, color: ResourceColor, onTap: () => void) {
     Text(label)
-      .fontSize(12)
+      .fontSize(14)
       .fontColor(color)
       .textAlign(TextAlign.Center)
       .backgroundColor(this.theme.chipBg)
       .borderRadius(RADIUS_CHIP)
-      .padding({ left: 8, right: 8, top: 8, bottom: 8 })
-      .margin({ left: 3, right: 3, top: 3, bottom: 3 })
+      .padding({ left: 4, right: 4, top: 8, bottom: 8 })
       .layoutWeight(1)
       .maxLines(1)
       .textOverflow({ overflow: TextOverflow.Ellipsis })
       .onClick(onTap)
   }
 
-  /** 刮削菜单：前两项带 sceneId 进目标页才能写回；第三项走本页的 stash-box 识别 */
-  @Builder
-  scrapeMenu() {
-    Menu() {
-      MenuItem({ content: '按名称 / URL 刮削' }).onClick(() => {
-        router.pushUrl({
-          url: 'pages/ScrapePage',
-          params: { 'id': this.sceneId, 'sceneTitle': this.scene.title }
-        })
+  /**
+   * 刮削方式菜单：锚定在「刮削」按钮下方的自定义下拉菜单。
+   *
+   * 为什么不用 bindMenu / showActionSheet：
+   * - showActionSheet 是系统底部操作表，样式跟 App 不统一（用户要求改回小菜单）。
+   * - bindMenu 的菜单项在本页丢过点击：Menu 的选项是框架在独立弹层里渲染的，
+   *   选项回调里直接 router.pushUrl 时，菜单关闭动画会和页面转场抢同一帧，
+   *   表现就是「点了没反应」。MenuOptions 也没有 onStateChange 钩子，
+   *   没法把动作推迟到弹层彻底关闭之后。
+   * - bindPopup 的选项是我们自己画的普通 Text + onClick，不走 Menu 的手势机制，
+   *   并且有 onStateChange，可以等弹层真正关闭后再执行跳转。
+   */
+  private runScrapeAction(idx: number): void {
+    if (idx === 0) {
+      router.pushUrl({
+        url: 'pages/ScrapePage',
+        params: { 'id': this.sceneId, 'sceneTitle': this.scene.title }
       })
-      MenuItem({ content: 'Fantia 刮削' }).onClick(() => {
-        router.pushUrl({ url: 'pages/FantiaPage', params: { 'sceneId': this.sceneId } })
-      })
-      MenuItem({ content: 'Stash-box 识别' }).onClick(() => {
-        this.openIdentify()
-      })
+    } else {
+      router.pushUrl({ url: 'pages/FantiaPage', params: { 'sceneId': this.sceneId } })
     }
   }
 
-  /** 刮削按钮：外观与其它动作按钮一致，点击弹出上面的菜单；识别进行中显示忙碌态 */
+  /** 下拉菜单里的一个选项 */
+  @Builder
+  scrapeMenuItem(label: string, idx: number) {
+    Text(label)
+      .fontSize(14)
+      .fontColor(this.theme.textPrimary)
+      .textAlign(TextAlign.Start)
+      .width('100%')
+      .padding({ left: 14, right: 14, top: 11, bottom: 11 })
+      .onClick(() => {
+        // 只记下选择并关掉弹层，真正的动作等弹层关闭（onStateChange）后再做
+        this.pendingScrape = idx
+        this.scrapeMenuOpen = false
+      })
+  }
+
+  /** 下拉菜单面板：跟 App 主题一致，字号 14（Stash-box 已提为独立按钮，不在这里） */
+  @Builder
+  scrapeMenuPanel() {
+    Column() {
+      this.scrapeMenuItem('按名称 / URL 刮削', 0)
+      Divider().color(this.theme.divider).margin({ left: 12, right: 12 })
+      this.scrapeMenuItem('Fantia 刮削', 1)
+    }
+    .width(196)
+    .padding({ top: 6, bottom: 6 })
+    .backgroundColor(this.theme.cardBg)
+    .borderRadius(RADIUS_CARD)
+    .border({ width: 1, color: this.theme.cardBorder })
+    .shadow({ radius: 16, color: this.theme.cardShadow, offsetY: 4 })
+  }
+
+  /** 刮削按钮：三种刮削方式统一收在这一个入口里 */
   @Builder
   scrapeBtn() {
     Text(this.identifyBusy ? '识别中…' : '刮削')
-      .fontSize(12)
+      .fontSize(14)
       .fontColor(this.identifyBusy ? this.theme.textSecondary : this.theme.brandColor)
       .textAlign(TextAlign.Center)
       .backgroundColor(this.theme.chipBg)
       .borderRadius(RADIUS_CHIP)
-      .padding({ left: 8, right: 8, top: 8, bottom: 8 })
-      .margin({ left: 3, right: 3, top: 3, bottom: 3 })
+      .padding({ left: 4, right: 4, top: 8, bottom: 8 })
       .layoutWeight(1)
       .maxLines(1)
       .textOverflow({ overflow: TextOverflow.Ellipsis })
-      .bindMenu(this.scrapeMenu())
+      .onClick(() => {
+        if (this.identifyBusy) {
+          return
+        }
+        this.scrapeMenuOpen = !this.scrapeMenuOpen
+      })
+      .bindPopup(this.scrapeMenuOpen, {
+        builder: this.scrapeMenuPanel,
+        placement: Placement.Bottom,
+        showInSubWindow: false,
+        mask: false,
+        autoCancel: true,
+        enableArrow: true,
+        popupColor: Color.Transparent,
+        onStateChange: (e) => {
+          if (!e.isVisible) {
+            this.scrapeMenuOpen = false
+            const idx: number = this.pendingScrape
+            if (idx >= 0) {
+              this.pendingScrape = -1
+              // 弹层已彻底关闭，此时跳转不会被关闭动画吞掉
+              this.runScrapeAction(idx)
+            }
+          }
+        }
+      })
   }
 
   @Builder
@@ -1528,10 +1603,24 @@ struct SceneDetailPage {
   @Builder
   identifyCard() {
     Column() {
-      Text('Stash-box 识别').fontSize(13).fontWeight(FontWeight.Bold)
+      Text('BOX 刮削').fontSize(13).fontWeight(FontWeight.Bold)
         .fontColor(this.theme.textSecondary).width('100%')
-      Text('按文件指纹在 stash-box 里找匹配。只补空缺：标题、简介、日期、URL 已有的不覆盖，工作室/演员/标签只加缺的。')
+      Text('按文件指纹在 BOX 源里找匹配。标题、简介、日期、URL 只补空缺，已有内容不覆盖。')
         .fontSize(11).fontColor(this.theme.textSecondary).width('100%').margin({ top: 4 })
+
+      // 「允许新建」：stash-box 的演员名多为英文，和库里已有的日文名对不上，
+      // 默认不新建，避免造出重复演员；确实需要补建时再打开。
+      Row() {
+        Text('允许新建工作室 / 演员 / 标签')
+          .fontSize(12).fontColor(this.theme.textPrimary).layoutWeight(1)
+        Toggle({ type: ToggleType.Switch, isOn: this.identifyCreateMissing })
+          .selectedColor(this.theme.brandColor)
+          .width(44).height(22)
+          .onChange((v: boolean) => {
+            this.identifyCreateMissing = v
+          })
+      }
+      .width('100%').alignItems(VerticalAlign.Center).margin({ top: GAP_S })
 
       if (this.identifyBusy) {
         Row() {
@@ -1729,11 +1818,15 @@ struct SceneDetailPage {
               .fontColor(this.theme.textPrimary)
               .width('100%').margin({ top: GAP_M })
 
-            // 操作行（刮削 / 编辑 / 合并 / 删除）——四等分，与下方卡片里的按钮同一套网格
-            // 左右各内缩 PAD_PAGE，才能和「基本情報」卡片内的按钮左右边缘对齐
-            Row() {
-              // 一个「刮削」按钮：按名称/URL、Fantia、Stash-box 识别都收在这个菜单里
+            // 操作行（刮削 / Stash-box / 编辑 / 合并 / 删除）——一行五个等宽 chip
+            Row({ space: 6 }) {
               this.scrapeBtn()
+              this.actionBtn(this.identifyBusy ? '识别中…' : 'BOX',
+                this.identifyBusy ? this.theme.textSecondary : this.theme.brandColor, () => {
+                  if (!this.identifyBusy) {
+                    this.openIdentify()
+                  }
+                })
               this.actionBtn(this.editMode ? '编辑中' : '编辑', this.theme.brandColor, () => {
                 if (this.editMode) {
                   this.editMode = false
@@ -1753,7 +1846,8 @@ struct SceneDetailPage {
               })
             }
             .width('100%')
-            .padding({ left: PAD_PAGE, right: PAD_PAGE })
+            // +1：卡片自带 1vp 边框，补上这一条让按钮行与卡片内容严格等齐
+            .padding({ left: PAD_PAGE + 1, right: PAD_PAGE + 1 })
             .margin({ top: GAP_M - 2 })
 
             // 编辑 / 合并 / 识别 面板
@@ -1791,7 +1885,7 @@ struct SceneDetailPage {
               .width('100%').alignItems(VerticalAlign.Center).margin({ top: 8 })
 
               // 清除刮削 / 收藏 / 整理 / 封面
-              Row() {
+              Row({ space: 6 }) {
                 this.actionBtn('清除刮削', '#FFE84026', () => {
                   this.confirmClearScrape()
                 })
