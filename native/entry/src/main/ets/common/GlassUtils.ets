@@ -48,6 +48,16 @@ export const HMS_FONT_BODY: number = 14
 export const HMS_FONT_CAPTION: number = 12
 export const HMS_FONT_TINY: number = 10
 
+/**
+ * 玻璃边缘高光（1vp）——液态玻璃的「边」靠这一层认出来，不靠投影。
+ * 顶部一条横向渐隐高光 + 四周一圈亮白描边。
+ */
+export const GLASS_EDGE_HI_LIGHT: string = '#B3FFFFFF'
+export const GLASS_EDGE_HI_DARK: string = '#40FFFFFF'
+/** 卡片局部遮罩：正文压在图/渐变上时垫在最底层，保证文字对比度 */
+export const GLASS_SCRIM_LIGHT: string = '#26FFFFFF'
+export const GLASS_SCRIM_DARK: string = '#33000000'
+
 /** 玻璃主题色 */
 export interface GlassTheme {
   cardBg: string
@@ -61,38 +71,50 @@ export interface GlassTheme {
   surfaceBg: string
   chipBg: string
   divider: string
+  /** 1vp 顶部高光描边 */
+  cardEdgeHi: string
+  /** 顶栏玻璃底色（极淡，靠系统材质出雾感） */
+  navBg: string
+  /** 正文压图时的局部遮罩 */
+  textScrim: string
   isDark: boolean
 }
 
-/** 浅色玻璃 */
+/** 浅色玻璃（卡片走低不透明度 + 系统材质，色相从底层渐变透上来） */
 export const GLASS_THEME_LIGHT: GlassTheme = {
-  cardBg: '#4DFFFFFF',
-  cardBorder: '#CCFFFFFF',
-  cardShadow: '#26000000',
+  cardBg: '#33FFFFFF',
+  cardBorder: '#B8FFFFFF',
+  cardShadow: '#1A000000',
   scaffoldBg: '#FFF2F4F8',
-  dockBg: '#A6FFFFFF',
+  dockBg: '#4DFFFFFF',
   brandColor: HMS_BRAND,
   textPrimary: '#FF000000',
-  textSecondary: '#FF6E6E73',
-  surfaceBg: '#FFFFFFFF',
-  chipBg: '#FFF2F2F7',
+  textSecondary: '#FF4A4A50',
+  surfaceBg: '#F2FFFFFF',
+  chipBg: '#CCF2F2F7',
   divider: '#FFF0F0F2',
+  cardEdgeHi: GLASS_EDGE_HI_LIGHT,
+  navBg: '#1FFFFFFF',
+  textScrim: GLASS_SCRIM_LIGHT,
   isDark: false
 }
 
 /** 深色玻璃 */
 export const GLASS_THEME_DARK: GlassTheme = {
-  cardBg: '#66333A4D',
-  cardBorder: '#4DFFFFFF',
-  cardShadow: '#4D000000',
+  cardBg: '#2E333A4D',
+  cardBorder: '#33FFFFFF',
+  cardShadow: '#40000000',
   scaffoldBg: '#FF0E0F13',
-  dockBg: '#B32A3040',
+  dockBg: '#8C1A1F2B',
   brandColor: HMS_BRAND_DARK,
   textPrimary: '#FFF5F5F7',
-  textSecondary: '#FF9A9AA2',
-  surfaceBg: '#FF2A2F3D',
-  chipBg: '#FF333A4A',
+  textSecondary: '#FFB8B8C0',
+  surfaceBg: '#F22A2F3D',
+  chipBg: '#CC333A4A',
   divider: '#FF2C2F38',
+  cardEdgeHi: GLASS_EDGE_HI_DARK,
+  navBg: '#1A000000',
+  textScrim: GLASS_SCRIM_DARK,
   isDark: true
 }
 
@@ -101,18 +123,31 @@ export interface GlassBackdrop {
   top: string
   mid: string
   bottom: string
+  /** 图垫底时顶部压幕（半透明 top 色）——保证顶栏文字压在照片上仍可读 */
+  veilTop: string
+  /** 压幕过渡档 */
+  veilMid: string
 }
 
+/**
+ * 背景渐变：玻璃后面的「桌面」。
+ * 提高色阶饱和度而不是堆白——卡片压在饱和渐变上，透过来的才是有色玻璃，
+ * 压在浅灰白上永远是奶白板。
+ */
 export const GLASS_BG_LIGHT: GlassBackdrop = {
-  top: '#FF9EC5FF',
-  mid: '#FFD3C4FF',
-  bottom: '#FFFFC0D8'
+  top: '#FF86B7FF',
+  mid: '#FFC0A6FF',
+  bottom: '#FFFFA8CC',
+  veilTop: '#D986B7FF',
+  veilMid: '#7A86B7FF'
 }
 
 export const GLASS_BG_DARK: GlassBackdrop = {
-  top: '#FF1E2A4A',
-  mid: '#FF12141B',
-  bottom: '#FF33203F'
+  top: '#FF16244F',
+  mid: '#FF0E0C16',
+  bottom: '#FF3A1846',
+  veilTop: '#D916244F',
+  veilMid: '#7A16244F'
 }
 
 /** 当前主题（跟随设置） */

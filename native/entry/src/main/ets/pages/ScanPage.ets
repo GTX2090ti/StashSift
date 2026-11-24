@@ -251,7 +251,7 @@ struct ScanPage {
     .backgroundColor(this.theme.cardBg)
     .borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(20)
+    .backgroundEffect({ radius: 20, saturation: 1.35 })
     .onClick(onTap)
   }
 
@@ -370,7 +370,7 @@ struct ScanPage {
       .backgroundColor(this.theme.cardBg)
       .borderRadius(RADIUS_CARD)
       .border({ width: 1, color: this.theme.cardBorder })
-      .backdropBlur(30)
+      .backgroundEffect({ radius: 30, saturation: 1.35 })
     }
     .width('100%')
     .height('100%')

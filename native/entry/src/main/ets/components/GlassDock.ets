@@ -76,22 +76,37 @@ export struct GlassDock {
 
   build() {
     Column() {
-      Row() {
-        this.navItem(0)
-        this.navItem(1)
-        this.navItem(2)
-        this.navItem(3)
-        this.navItem(4)
+      Stack({ alignContent: Alignment.TopStart }) {
+        Row() {
+          this.navItem(0)
+          this.navItem(1)
+          this.navItem(2)
+          this.navItem(3)
+          this.navItem(4)
+        }
+        .width('100%')
+        .height(DOCK_H)
+        .padding({ left: GAP_XS, right: GAP_XS })
+        .justifyContent(FlexAlign.SpaceEvenly)
+
+        // 顶部 1vp 高光（玻璃上边缘反光）
+        Row()
+          .width('100%')
+          .height(1)
+          .linearGradient({
+            angle: 90,
+            colors: [['#00FFFFFF', 0.0], [this.theme.cardEdgeHi, 0.5], ['#00FFFFFF', 1.0]]
+          })
+          .hitTestBehavior(HitTestMode.None)
       }
       .width('100%')
       .height(DOCK_H)
-      .padding({ left: GAP_XS, right: GAP_XS })
-      .justifyContent(FlexAlign.SpaceEvenly)
       .backgroundColor(this.theme.dockBg)
       .borderRadius(RADIUS_DOCK)
       .border({ width: 1, color: this.theme.cardBorder })
+      .backgroundEffect({ radius: 30, saturation: 1.35 })
       .shadow({ radius: 24, color: this.theme.cardShadow })
-      .backdropBlur(30)
+      .clip(true)
     }
     .width('100%')
     .padding({ left: PAD_PAGE, right: PAD_PAGE })

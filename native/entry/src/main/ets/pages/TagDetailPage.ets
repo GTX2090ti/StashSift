@@ -554,7 +554,7 @@ struct TagDetailPage {
     }
     .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
-    .border({ width: 1, color: this.theme.cardBorder }).backdropBlur(24)
+    .border({ width: 1, color: this.theme.cardBorder }).backgroundEffect({ radius: 24, saturation: 1.35 })
   }
 
   @Builder
@@ -687,7 +687,7 @@ struct TagDetailPage {
     .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.brandColor })
-    .backdropBlur(24).margin({ top: GAP_M })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
   }
 
   /** 父标签候选浮层（页面内嵌，不新建页面） */
@@ -954,7 +954,7 @@ struct TagDetailPage {
     .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.brandColor })
-    .backdropBlur(24).margin({ top: GAP_M })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
   }
 
   @Builder

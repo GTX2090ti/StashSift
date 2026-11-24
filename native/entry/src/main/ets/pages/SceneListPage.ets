@@ -88,7 +88,50 @@ struct SceneListPage {
   @StorageProp('sceneVersion') @Watch('onScenesChanged') sceneVersion: number = 0
 
   onScenesChanged(): void {
-    this.reload()
+    // 评分/整理/刮削写回都会 bump 版本：静默替换已加载的页，不清空，网格才不会回顶
+    this.softRefresh()
+  }
+
+  /** 只重拉「已经加载的那些页」，拉完原地替换 —— 保住滚动位置 */
+  private async softRefresh(): Promise<void> {
+    if (this.loading) {
+      return
+    }
+    this.loading = true
+    try {
+      const api = new StashApi(AppSettings.instance.baseUrl, AppSettings.instance.apiKey)
+      if (this.favTagId.length === 0) {
+        this.favTagId = await api.favoriteTagId()
+      }
+      const so: SortOption = this.sorts[this.sortIndex]
+      const pages: number = this.page > 1 ? this.page - 1 : 1
+      const out: Scene[] = []
+      let fetched: number = 1
+      let full: boolean = true
+      for (let p = 1; p <= pages; p++) {
+        const raw: SceneDto[] = await api.findScenesFiltered(
+          p, 24, this.keyword.trim(), so.field, this.sortDir,
+          SceneFilterState.instance.toJson()
+        )
+        const list: Scene[] = Scene.listFromDto(raw)
+        for (let i = 0; i < list.length; i++) {
+          out.push(list[i])
+        }
+        fetched = p
+        full = list.length === 24
+        if (!full) {
+          break
+        }
+      }
+      this.scenes = out
+      this.hasMore = full
+      this.page = fetched + 1
+      this.errorText = ''
+    } catch (e) {
+      this.errorText = (e as Error).message
+      console.error('[SceneListPage] softRefresh ' + this.errorText)
+    }
+    this.loading = false
   }
 
   onPageShow(): void {
@@ -344,7 +387,7 @@ private sortMenu(): MenuElement[] {
     .borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
     .shadow({ radius: 14, color: this.theme.cardShadow })
-    .backdropBlur(24)
+    .backgroundEffect({ radius: 24, saturation: 1.35 })
     .clip(true)
     .onClick(() => {
       if (this.selectMode) {
@@ -1081,7 +1124,7 @@ private sortMenu(): MenuElement[] {
             .layoutWeight(1)
             .height(44)
             .backgroundColor(this.theme.cardBg)
-            .backdropBlur(30)
+            .backgroundEffect({ radius: 30, saturation: 1.35 })
             .borderRadius(22)
             .border({ width: 1, color: this.theme.cardBorder })
             .shadow({ radius: 24, color: this.theme.cardShadow })

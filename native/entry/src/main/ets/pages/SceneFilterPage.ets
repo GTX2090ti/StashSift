@@ -668,7 +668,7 @@ struct SceneFilterPage {
       .padding({ left: GAP_M, right: GAP_M, top: GAP_M, bottom: GAP_M })
       .backgroundColor(this.theme.dockBg)
       .borderRadius(RADIUS_CARD + 8)
-      .backdropBlur(24)
+      .backgroundEffect({ radius: 24, saturation: 1.35 })
       .shadow({ radius: 20, color: this.theme.cardShadow })
     }
     .width('100%')

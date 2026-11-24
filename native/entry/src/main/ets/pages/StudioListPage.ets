@@ -126,10 +126,43 @@ struct StudioListPage {
   @StorageProp('sceneVersion') @Watch('onScenesChanged') sceneVersion: number = 0
 
   onScenesChanged(): void {
-    this.items = []
-    this.page = 1
-    this.hasMore = true
-    this.load()
+    // 详情页改名/收藏/写回后 bump 版本：静默替换已加载页，不清空，避免列表回顶
+    this.softRefresh()
+  }
+
+  /** 只重拉已加载的页并原地替换，保住滚动位置 */
+  private async softRefresh(): Promise<void> {
+    if (this.loading) {
+      return
+    }
+    this.loading = true
+    try {
+      const api = new StashApi(AppSettings.instance.baseUrl, AppSettings.instance.apiKey)
+      const so: SortOption = STUDIO_SORTS[this.sortIndex]
+      const dir: string = this.sortDir.length > 0 ? this.sortDir : so.dir
+      const pages: number = this.page > 1 ? this.page - 1 : 1
+      const out: Studio[] = []
+      let fetched: number = 1
+      let full: boolean = true
+      for (let p = 1; p <= pages; p++) {
+        const raw: StudioDto[] = await api.findStudiosLite(p, 60, so.sort, dir, this.keyword.trim())
+        const list: Studio[] = Studio.listFromDto(raw)
+        for (let i = 0; i < list.length; i++) {
+          out.push(list[i])
+        }
+        fetched = p
+        full = list.length === 60
+        if (!full) {
+          break
+        }
+      }
+      this.items = out
+      this.hasMore = full
+      this.page = fetched + 1
+    } catch (e) {
+      console.error('[StudioListPage] softRefresh ' + (e as Error).message)
+    }
+    this.loading = false
   }
 
   /** 系统深浅色变化时即时跟随 */
@@ -332,7 +365,7 @@ struct StudioListPage {
         .width('100%').padding(PAD_PAGE)
         .backgroundColor(this.theme.cardBg)
         .border({ width: { top: 1 }, color: this.theme.cardBorder })
-        .backdropBlur(24)
+        .backgroundEffect({ radius: 24, saturation: 1.35 })
       }
     }
     .width('100%')

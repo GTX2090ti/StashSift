@@ -1275,7 +1275,7 @@ struct SceneDetailPage {
     .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.brandColor })
-    .backdropBlur(24).margin({ top: GAP_M })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
   }
 
   @Builder
@@ -1597,7 +1597,7 @@ struct SceneDetailPage {
     .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.brandColor })
-    .backdropBlur(24).margin({ top: GAP_M })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
   }
 
   @Builder
@@ -1656,7 +1656,7 @@ struct SceneDetailPage {
     .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.brandColor })
-    .backdropBlur(24).margin({ top: GAP_M })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
   }
 
   @Builder
@@ -1793,8 +1793,58 @@ struct SceneDetailPage {
     return w * 9 / 16
   }
 
+  /** 封面垫底高度：覆盖状态栏 + 顶栏 + 横幅，再往下交给渐变 */
+  private heroHeight(): number {
+    return this.winW * 1.05
+  }
+
+  /**
+   * 真实封面垫底 —— 「透」的前提。
+   * 模糊 + 放大超出屏幕（裁掉模糊软边）+ 自上而下的遮罩（保证顶栏文字对比度，
+   * 并在内容区平滑交回页面渐变）。
+   */
+  @Builder
+  heroBackdrop() {
+    Stack({ alignContent: Alignment.TopStart }) {
+      if (this.scene.poster.length > 0) {
+        Column() {
+          AuthImage({ rawPath: this.scene.poster })
+        }
+        .width('112%')
+        .height(this.heroHeight())
+        .margin({ left: '-6%' })
+        .blur(8)
+      }
+      Column()
+        .width('100%')
+        .height(this.heroHeight())
+        .linearGradient({
+          angle: 180,
+          colors: [
+            [this.bd.veilTop, 0.0],
+            [this.bd.veilMid, 0.22],
+            ['#00000000', 0.40],
+            [this.bd.mid, 0.72],
+            [this.bd.mid, 1.0]
+          ]
+        })
+    }
+    .width('100%')
+    .height(this.heroHeight())
+    .clip(true)
+  }
+
   build() {
-    Column() {
+    Stack({ alignContent: Alignment.TopStart }) {
+      // 页面底色
+      Column()
+        .width('100%')
+        .height('100%')
+        .linearGradient({ angle: 160, colors: [[this.bd.top, 0.0], [this.bd.mid, 0.5], [this.bd.bottom, 1.0]] })
+
+      this.heroBackdrop()
+
+      Column() {
       GlassNavBar({
         title: this.scene.title.length === 0 ? L10n.translate('短片详情') : this.scene.title,
         subtitle: this.scene.studioNames.length > 0 ? this.scene.studioNames[0] : '',
@@ -1907,7 +1957,7 @@ struct SceneDetailPage {
             .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
             .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
             .border({ width: 1, color: this.theme.cardBorder })
-            .backdropBlur(24).margin({ top: GAP_M })
+            .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
 
             // 工作室
             Column() {
@@ -1932,7 +1982,7 @@ struct SceneDetailPage {
             .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
             .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
             .border({ width: 1, color: this.theme.cardBorder })
-            .backdropBlur(24).margin({ top: GAP_M })
+            .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
 
             // 所属集合
             if (this.scene.groupIds.length > 0) {
@@ -1957,7 +2007,7 @@ struct SceneDetailPage {
               .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
               .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
               .border({ width: 1, color: this.theme.cardBorder })
-              .backdropBlur(24).margin({ top: GAP_M })
+              .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
             }
 
             // 演员
@@ -1990,7 +2040,7 @@ struct SceneDetailPage {
             .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
             .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
             .border({ width: 1, color: this.theme.cardBorder })
-            .backdropBlur(24).margin({ top: GAP_M })
+            .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
 
             // 标签
             if (this.scene.tagNames.length > 0) {
@@ -2015,7 +2065,7 @@ struct SceneDetailPage {
               .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
               .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
               .border({ width: 1, color: this.theme.cardBorder })
-              .backdropBlur(24).margin({ top: GAP_M })
+              .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
             }
 
             // URL
@@ -2032,7 +2082,7 @@ struct SceneDetailPage {
               .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
               .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
               .border({ width: 1, color: this.theme.cardBorder })
-              .backdropBlur(24).margin({ top: GAP_M })
+              .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
             }
 
             // 文件
@@ -2140,7 +2190,7 @@ struct SceneDetailPage {
             .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
             .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
             .border({ width: 1, color: this.theme.cardBorder })
-            .backdropBlur(24).margin({ top: GAP_M })
+            .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
           }
           .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 4, bottom: 32 })
           .alignItems(HorizontalAlign.Start)
@@ -2154,7 +2204,8 @@ struct SceneDetailPage {
       }
     }
     .width('100%').height('100%')
-    .linearGradient({ angle: 160, colors: [[this.bd.top, 0.0], [this.bd.mid, 0.5], [this.bd.bottom, 1.0]] })
+    }
+    .width('100%').height('100%')
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
   }
 }

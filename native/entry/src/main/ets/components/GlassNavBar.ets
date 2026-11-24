@@ -86,6 +86,9 @@ export struct GlassNavBar {
       top: this.statusInset + NAV_PAD_V,
       bottom: NAV_PAD_V
     })
-    .backgroundColor(Color.Transparent)
+    // 极淡玻璃条：压在纯渐变上几乎看不见，压在图/内容上才有雾面和底边
+    .backgroundColor(this.theme.navBg)
+    .backgroundEffect({ radius: 20, saturation: 1.35 })
+    .border({ width: { bottom: 1 }, color: this.theme.divider })
   }
 }

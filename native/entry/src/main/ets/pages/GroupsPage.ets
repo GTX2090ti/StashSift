@@ -218,7 +218,7 @@ struct GroupsPage {
     .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.brandColor })
-    .backdropBlur(24)
+    .backgroundEffect({ radius: 24, saturation: 1.35 })
     .margin({ left: PAD_PAGE, right: PAD_PAGE, top: GAP_S })
   }
 
@@ -233,7 +233,41 @@ struct GroupsPage {
   }
 
   onDataChanged(): void {
-    this.reloadWithSort()
+    // 集合详情改名/编辑后 bump 版本：静默替换，不清空，列表才不会回顶
+    this.softRefresh()
+  }
+
+  /** 只重拉已加载的页并原地替换，保住滚动位置 */
+  private async softRefresh(): Promise<void> {
+    if (this.loading) {
+      return
+    }
+    this.loading = true
+    try {
+      const so: SortOption = GROUP_SORTS[this.sortIndex]
+      const dir: string = this.sortDir.length > 0 ? this.sortDir : so.dir
+      const pages: number = this.page > 1 ? this.page - 1 : 1
+      const out: GroupDto[] = []
+      let fetched: number = 1
+      let full: boolean = true
+      for (let p = 1; p <= pages; p++) {
+        const raw: GroupDto[] = await this.api().findGroupsRich(p, 120, so.sort, dir, this.keyword.trim())
+        for (let i = 0; i < raw.length; i++) {
+          out.push(raw[i])
+        }
+        fetched = p
+        full = raw.length === 120
+        if (!full) {
+          break
+        }
+      }
+      this.items = out
+      this.hasMore = full
+      this.page = fetched + 1
+    } catch (e) {
+      console.error('[GroupsPage] softRefresh ' + (e as Error).message)
+    }
+    this.loading = false
   }
   /** 返回本页时刷新主题（设置页切换外观后立即生效） */
   onPageShow(): void {

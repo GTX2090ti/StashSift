@@ -105,7 +105,7 @@ struct LockPage {
       .backgroundColor(this.theme.cardBg)
       .borderRadius(RADIUS_CARD)
       .border({ width: 1, color: this.theme.cardBorder })
-      .backdropBlur(24)
+      .backgroundEffect({ radius: 24, saturation: 1.35 })
       .margin({ left: PAD_PAGE + 8, right: PAD_PAGE + 8 })
 
       Blank()

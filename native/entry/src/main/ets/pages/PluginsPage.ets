@@ -106,7 +106,7 @@ struct PluginsPage {
     .width('100%').padding(GAP_M)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(18).margin({ bottom: GAP_S })
+    .backgroundEffect({ radius: 20, saturation: 1.35 }).margin({ bottom: GAP_S })
   }
 
   @Builder
@@ -133,7 +133,7 @@ struct PluginsPage {
     .width('100%').padding(GAP_M)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(18).margin({ bottom: GAP_S })
+    .backgroundEffect({ radius: 20, saturation: 1.35 }).margin({ bottom: GAP_S })
   }
 
   build() {

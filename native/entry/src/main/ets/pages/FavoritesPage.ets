@@ -68,11 +68,94 @@ struct FavoritesPage {
   onPageShow(): void {
     this.theme = currentGlassTheme()
     this.bd = currentBackdrop()
-    // 对齐旧版：每次回到收藏页都重新拉（在网页端或别的页面改过收藏，回来才能看到最新的）
-    this.refreshTab(this.tab)
+    // 返回本页要看到最新数据，但不能清空重拉（清空会让网格回到顶部）——走静默刷新
+    this.softRefreshTab(this.tab)
   }
 
-  /** 重新拉某个页签的数据（切页签 / 回到本页 / 下拉刷新都走这里） */
+  /** 静默刷新：只重拉「已经加载的那些页」，拉完原地替换，不清空、不回顶 */
+  private softRefreshTab(idx: number): void {
+    if (idx === 0) {
+      this.softRefreshScenes()
+    } else if (idx === 1) {
+      this.softRefreshPerformers()
+    } else {
+      this.loadStudios()
+    }
+  }
+
+  private async softRefreshScenes(): Promise<void> {
+    if (this.loading) {
+      return
+    }
+    this.loading = true
+    try {
+      const api = new StashApi(AppSettings.instance.baseUrl, AppSettings.instance.apiKey)
+      if (this.sortField === 'favorite_at') {
+        const raw: SceneDto[] = await api.findAllFavoriteScenes()
+        this.scenes = this.sortByFavoriteTime(Scene.listFromDto(raw), this.sortDir)
+        this.hasMore = false
+        this.page = 2
+      } else {
+        const pages: number = this.page > 1 ? this.page - 1 : 1
+        const out: Scene[] = []
+        let fetched: number = 1
+        let full: boolean = true
+        for (let p = 1; p <= pages; p++) {
+          const raw: SceneDto[] = await api.findFavoriteScenes(p, 24, this.sortField, this.sortDir)
+          const list: Scene[] = Scene.listFromDto(raw)
+          for (let i = 0; i < list.length; i++) {
+            out.push(list[i])
+          }
+          fetched = p
+          full = list.length === 24
+          if (!full) {
+            break
+          }
+        }
+        this.scenes = out
+        this.hasMore = full
+        this.page = fetched + 1
+      }
+      this.errorText = ''
+    } catch (e) {
+      this.errorText = '加载失败：' + (e as Error).message
+    }
+    this.loading = false
+  }
+
+  private async softRefreshPerformers(): Promise<void> {
+    if (this.perfLoading) {
+      return
+    }
+    this.perfLoading = true
+    try {
+      const api = new StashApi(AppSettings.instance.baseUrl, AppSettings.instance.apiKey)
+      const pages: number = this.perfPage > 1 ? this.perfPage - 1 : 1
+      const out: PerformerDto[] = []
+      let fetched: number = 1
+      let full: boolean = true
+      for (let p = 1; p <= pages; p++) {
+        const list: PerformerDto[] = await api.findFavoritePerformers(
+          p, 30, this.perfSortOption().sort, this.perfDir())
+        for (let i = 0; i < list.length; i++) {
+          out.push(list[i])
+        }
+        fetched = p
+        full = list.length === 30
+        if (!full) {
+          break
+        }
+      }
+      this.performers = out
+      this.perfHasMore = full
+      this.perfPage = fetched + 1
+    } catch (e) {
+      this.errorText = '加载失败：' + (e as Error).message
+    }
+    this.perfLoading = false
+  }
+
+  /** 重新拉某个页签的数据（切页签 / 主动下拉刷新走这里，允许回顶） */
   private refreshTab(idx: number): void {
     if (idx === 0) {
       this.reload()
@@ -99,8 +182,11 @@ struct FavoritesPage {
   @StorageProp('sceneVersion') @Watch('onScenesChanged') sceneVersion: number = 0
 
   onScenesChanged(): void {
+    // 详情页改了评分/整理/写回会 bump 版本；这里必须静默替换，不能 reload（reload 会清空并回顶）
     if (this.tab === 0) {
-      this.reload()
+      this.softRefreshScenes()
+    } else if (this.tab === 1) {
+      this.softRefreshPerformers()
     }
   }
 
@@ -467,7 +553,7 @@ struct FavoritesPage {
     .borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
     .shadow({ radius: 14, color: this.theme.cardShadow })
-    .backdropBlur(24)
+    .backgroundEffect({ radius: 24, saturation: 1.35 })
     .clip(true)
     .onClick(() => {
       router.pushUrl({ url: 'pages/SceneDetailPage', params: { 'id': s.id } })
@@ -533,7 +619,7 @@ struct FavoritesPage {
     .borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
     .shadow({ radius: 14, color: this.theme.cardShadow })
-    .backdropBlur(24)
+    .backgroundEffect({ radius: 24, saturation: 1.35 })
     .clip(true)
     .onClick(() => {
       if (p.id !== undefined) {
@@ -601,7 +687,7 @@ struct FavoritesPage {
     .borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
     .shadow({ radius: 14, color: this.theme.cardShadow })
-    .backdropBlur(24)
+    .backgroundEffect({ radius: 24, saturation: 1.35 })
     .clip(true)
     .onClick(() => {
       if (s.id !== undefined) {

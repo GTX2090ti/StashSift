@@ -648,7 +648,7 @@ struct StudioDetailPage {
     .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.brandColor })
-    .backdropBlur(24).margin({ top: GAP_M })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
   }
 
   @Builder
@@ -686,7 +686,7 @@ struct StudioDetailPage {
     .width('100%').alignItems(VerticalAlign.Top)
     .padding(PAD_PAGE)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
-    .border({ width: 1, color: this.theme.cardBorder }).backdropBlur(24)
+    .border({ width: 1, color: this.theme.cardBorder }).backgroundEffect({ radius: 24, saturation: 1.35 })
   }
 
   /** 作品卡：归属信息（别名 / 已整理 / 评分）+ 作品数 + 简介，全部在一张折叠卡里 */
@@ -717,7 +717,7 @@ struct StudioDetailPage {
     .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 6, bottom: 10 }).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24).margin({ top: GAP_S })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_S })
   }
 
   @Builder
@@ -734,7 +734,7 @@ struct StudioDetailPage {
     .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 6, bottom: 10 }).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24).margin({ top: GAP_S })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_S })
   }
 
   @Builder
@@ -758,7 +758,7 @@ struct StudioDetailPage {
     .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 6, bottom: 10 }).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24).margin({ top: GAP_S })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_S })
   }
 
   @Builder
@@ -782,7 +782,7 @@ struct StudioDetailPage {
     .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 6, bottom: 10 }).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24).margin({ top: GAP_S })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_S })
   }
 
   @Builder
@@ -894,7 +894,7 @@ struct StudioDetailPage {
             .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 6, bottom: 10 })
             .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
             .border({ width: 1, color: this.theme.cardBorder })
-            .backdropBlur(24).margin({ top: GAP_S })
+            .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_S })
           }
           .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 4, bottom: 32 })
           .alignItems(HorizontalAlign.Start)

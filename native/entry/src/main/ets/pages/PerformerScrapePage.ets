@@ -912,7 +912,7 @@ struct PerformerScrapePage {
       .padding({ left: 16, right: 16, top: 8, bottom: 16 })
       .backgroundColor(this.theme.cardBg)
       .border({ width: { top: 1 }, color: this.theme.cardBorder })
-      .backdropBlur(24)
+      .backgroundEffect({ radius: 24, saturation: 1.35 })
     }
     .width('100%').height('100%')
     .linearGradient({

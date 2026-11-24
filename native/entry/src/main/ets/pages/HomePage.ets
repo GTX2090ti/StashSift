@@ -304,7 +304,7 @@ struct HomePage {
     .borderRadius(16)
     .border({ width: 1, color: this.theme.cardBorder })
     .shadow({ radius: 20, color: this.theme.cardShadow })
-    .backdropBlur(20)
+    .backgroundEffect({ radius: 20, saturation: 1.35 })
     .clip(true)
   }
 
@@ -353,7 +353,7 @@ struct HomePage {
     .backgroundColor(this.theme.cardBg)
     .borderRadius(16)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(18)
+    .backgroundEffect({ radius: 20, saturation: 1.35 })
     .clip(true)
     .onClick(() => {
       router.pushUrl({ url: 'pages/SceneDetailPage', params: { 'id': s.id } })

@@ -997,7 +997,7 @@ struct PerformerDetailPage {
     .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.brandColor })
-    .backdropBlur(24).margin({ top: GAP_M })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
   }
 
   @Builder
@@ -1215,7 +1215,7 @@ struct PerformerDetailPage {
     .width('100%').padding(PAD_PAGE).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.brandColor })
-    .backdropBlur(24).margin({ top: GAP_M })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
   }
 
   /** 基础信息行 */
@@ -1271,7 +1271,7 @@ struct PerformerDetailPage {
     .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 6, bottom: 10 }).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24).margin({ top: GAP_S })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_S })
   }
 
   @Builder
@@ -1294,7 +1294,7 @@ struct PerformerDetailPage {
     .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 6, bottom: 10 }).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24).margin({ top: GAP_S })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_S })
   }
 
   /** 职业（折叠） */
@@ -1319,7 +1319,7 @@ struct PerformerDetailPage {
     .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 6, bottom: 10 }).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24).margin({ top: GAP_S })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_S })
   }
 
   /** 链接（折叠） */
@@ -1348,7 +1348,7 @@ struct PerformerDetailPage {
     .width('100%').padding({ left: PAD_PAGE, right: PAD_PAGE, top: 6, bottom: 10 }).alignItems(HorizontalAlign.Start)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24).margin({ top: GAP_S })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_S })
   }
 
   /** 统计条目 */
@@ -1374,7 +1374,7 @@ struct PerformerDetailPage {
     .width('100%').padding(PAD_PAGE)
     .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24).margin({ top: GAP_M })
+    .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_M })
   }
 
   /**
@@ -1488,7 +1488,7 @@ struct PerformerDetailPage {
     .backgroundColor(this.theme.cardBg)
     .borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24)
+    .backgroundEffect({ radius: 24, saturation: 1.35 })
   }
 
   private genderText(g: string): string {
@@ -1542,7 +1542,7 @@ struct PerformerDetailPage {
     .backgroundColor(this.theme.cardBg)
     .borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(24)
+    .backgroundEffect({ radius: 24, saturation: 1.35 })
   }
 
   @Builder
@@ -1590,7 +1590,7 @@ struct PerformerDetailPage {
     .backgroundColor(this.theme.cardBg)
     .borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(18)
+    .backgroundEffect({ radius: 20, saturation: 1.35 })
     .clip(true)
     .onClick(() => {
       router.pushUrl({ url: 'pages/SceneDetailPage', params: { 'id': s.id } })
@@ -1613,8 +1613,57 @@ struct PerformerDetailPage {
     return '23.5%'
   }
 
+  /** 封面垫底高度：覆盖状态栏 + 顶栏 + 头图，再往下交给渐变 */
+  private heroHeight(): number {
+    return this.winW * 1.05
+  }
+
+  /**
+   * 真实头像垫底 —— 「透」的前提。
+   * 模糊 + 放大超出屏幕（裁掉模糊软边）+ 自上而下遮罩（顶栏文字对比度 + 内容区平滑交回渐变）。
+   */
+  @Builder
+  heroBackdrop() {
+    Stack({ alignContent: Alignment.TopStart }) {
+      if (this.performer.image_path.length > 0) {
+        Column() {
+          AuthImage({ rawPath: this.performer.image_path })
+        }
+        .width('112%')
+        .height(this.heroHeight())
+        .margin({ left: '-6%' })
+        .blur(8)
+      }
+      Column()
+        .width('100%')
+        .height(this.heroHeight())
+        .linearGradient({
+          angle: 180,
+          colors: [
+            [this.bd.veilTop, 0.0],
+            [this.bd.veilMid, 0.22],
+            ['#00000000', 0.40],
+            [this.bd.mid, 0.72],
+            [this.bd.mid, 1.0]
+          ]
+        })
+    }
+    .width('100%')
+    .height(this.heroHeight())
+    .clip(true)
+  }
+
   build() {
-    Column() {
+    Stack({ alignContent: Alignment.TopStart }) {
+      // 页面底色
+      Column()
+        .width('100%')
+        .height('100%')
+        .linearGradient({ angle: 160, colors: [[this.bd.top, 0.0], [this.bd.mid, 0.5], [this.bd.bottom, 1.0]] })
+
+      this.heroBackdrop()
+
+      Column() {
       GlassNavBar({
         title: this.performer.name.length === 0 ? L10n.translate('演员') : this.performer.name,
         subtitle: this.performer.scene_count > 0
@@ -1712,7 +1761,7 @@ struct PerformerDetailPage {
               .backgroundColor(this.theme.cardBg)
               .borderRadius(RADIUS_CARD)
               .border({ width: 1, color: this.theme.cardBorder })
-              .backdropBlur(24)
+              .backgroundEffect({ radius: 24, saturation: 1.35 })
             }
 
             if (this.performer.tags.length > 0) {
@@ -1736,7 +1785,7 @@ struct PerformerDetailPage {
               .backgroundColor(this.theme.cardBg)
               .borderRadius(RADIUS_CARD)
               .border({ width: 1, color: this.theme.cardBorder })
-              .backdropBlur(24)
+              .backgroundEffect({ radius: 24, saturation: 1.35 })
             }
 
             Column() {
@@ -1784,7 +1833,7 @@ struct PerformerDetailPage {
             .padding({ left: PAD_PAGE, right: PAD_PAGE, top: 6, bottom: 10 })
             .backgroundColor(this.theme.cardBg).borderRadius(RADIUS_CARD)
             .border({ width: 1, color: this.theme.cardBorder })
-            .backdropBlur(24).margin({ top: GAP_S })
+            .backgroundEffect({ radius: 24, saturation: 1.35 }).margin({ top: GAP_S })
           }
           .width('100%')
           .padding({ left: PAD_PAGE, right: PAD_PAGE, top: 4, bottom: 32 })
@@ -1800,10 +1849,9 @@ struct PerformerDetailPage {
     }
     .width('100%')
     .height('100%')
-    .linearGradient({
-      angle: 160,
-      colors: [[this.bd.top, 0.0], [this.bd.mid, 0.5], [this.bd.bottom, 1.0]]
-    })
+    }
+    .width('100%')
+    .height('100%')
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
   }
 }

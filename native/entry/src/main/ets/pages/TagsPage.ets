@@ -209,6 +209,46 @@ struct TagsPage {
     const v: number = scenesVersion()
     if (v !== this.lastVersion) {
       this.lastVersion = v
+      // 标签被编辑/合并后返回：静默替换，不清空，列表才不会回顶
+      this.softRefresh()
+    }
+  }
+
+  /** 只重拉已加载的页并原地替换，保住滚动位置 */
+  private async softRefresh(): Promise<void> {
+    if (this.loading) {
+      this.pendingReload = true
+      return
+    }
+    this.loading = true
+    try {
+      const api = new StashApi(AppSettings.instance.baseUrl, AppSettings.instance.apiKey)
+      const so: SortOption = TAG_SORTS[this.sortIndex]
+      const dir: string = this.sortDir.length > 0 ? this.sortDir : so.dir
+      const pages: number = this.page > 1 ? this.page - 1 : 1
+      const out: Tag[] = []
+      let fetched: number = 1
+      let full: boolean = true
+      for (let p = 1; p <= pages; p++) {
+        const raw: TagDto[] = await api.findTags(p, 120, so.sort, dir, this.keyword.trim())
+        for (let i = 0; i < raw.length; i++) {
+          out.push(Tag.fromDto(raw[i]))
+        }
+        fetched = p
+        full = raw.length === 120
+        if (!full) {
+          break
+        }
+      }
+      this.items = out
+      this.hasMore = full
+      this.page = fetched + 1
+    } catch (e) {
+      console.error('[TagsPage] softRefresh ' + (e as Error).message)
+    }
+    this.loading = false
+    if (this.pendingReload) {
+      this.pendingReload = false
       this.reloadWithSort()
     }
   }

@@ -63,8 +63,45 @@ struct PerformerListPage {
     const v: number = scenesVersion()
     if (v !== this.lastVersion) {
       this.lastVersion = v
-      this.reload()
+      // 编辑保存 / 合并 / 写回后返回：静默替换，不清空，列表才不会回顶
+      this.softRefresh()
     }
+  }
+
+  /** 只重拉已加载的页并原地替换，保住滚动位置（reload 会清空回顶，只用于切排序/搜索） */
+  private async softRefresh(): Promise<void> {
+    if (this.loading) {
+      return
+    }
+    this.loading = true
+    try {
+      const api = new StashApi(AppSettings.instance.baseUrl, AppSettings.instance.apiKey)
+      const sort: SortOption = PERFORMER_SORTS[this.sortIndex]
+      const pages: number = this.page > 1 ? this.page - 1 : 1
+      const out: Performer[] = []
+      let fetched: number = 1
+      let full: boolean = true
+      for (let p = 1; p <= pages; p++) {
+        const raw: PerformerDto[] = await api.findPerformersEx(
+          p, this.pageSize, this.keyword.trim(), sort.sort, this.sortDir)
+        const list: Performer[] = Performer.listFromDto(raw)
+        for (let i = 0; i < list.length; i++) {
+          out.push(list[i])
+        }
+        fetched = p
+        full = list.length >= this.pageSize
+        if (!full) {
+          break
+        }
+      }
+      this.items = out
+      this.hasMore = full
+      this.page = fetched + 1
+      this.errorText = ''
+    } catch (e) {
+      this.errorText = '加载失败：' + (e as Error).message
+    }
+    this.loading = false
   }
 
   @StorageProp('themeVersion') @Watch('onThemeChanged') themeVersion: number = 0
@@ -206,7 +243,7 @@ struct PerformerListPage {
     .backgroundColor(this.theme.cardBg)
     .borderRadius(RADIUS_CARD)
     .border({ width: 1, color: this.theme.cardBorder })
-    .backdropBlur(18)
+    .backgroundEffect({ radius: 20, saturation: 1.35 })
     .clip(true)
     .onClick(() => {
       this.openDetail(p.id)

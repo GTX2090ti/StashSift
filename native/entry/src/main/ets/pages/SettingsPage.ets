@@ -364,7 +364,7 @@ struct SettingsPage {
           .backgroundColor(this.theme.cardBg)
           .borderRadius(16)
           .border({ width: 1, color: this.theme.cardBorder })
-          .backdropBlur(20)
+          .backgroundEffect({ radius: 20, saturation: 1.35 })
         }
         .width('100%')
         .padding({ left: 16, right: 16, top: 12, bottom: 24 })
